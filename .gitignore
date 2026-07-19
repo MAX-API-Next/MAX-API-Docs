@@ -26,8 +26,10 @@ yarn-error.log*
 # others
 .env
 .env*.local
+.env.docker
 .vercel
 next-env.d.ts
 .idea/
 
 new-api-docs-v1
+.tmp
