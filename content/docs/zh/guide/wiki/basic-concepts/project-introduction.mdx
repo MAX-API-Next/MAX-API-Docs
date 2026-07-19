@@ -1,0 +1,89 @@
+---
+title: 项目介绍
+description: 了解 MAX API，面向 AI 模型治理、AgentOps 与合法授权场景的 API 网关基础设施
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="my-8 text-center">
+  <img
+    src="/assets/logo.png"
+    alt="MAX API Logo"
+    className="mx-auto"
+    width="120"
+    height="120"
+  />
+  <h1 className="mt-4 mb-2 text-4xl font-bold">MAX API</h1>
+  <p className="text-fd-muted-foreground">
+    AI 模型治理、AgentOps 与 AGI 应用服务基础设施
+  </p>
+</div>
+
+## 概述
+
+MAX API 是由来自科研机构和高校的 AGI 爱好者组织发起、维护和长期运营的开源项目，面向开发者、研究者、团队和组织提供统一的 AI 模型接入、鉴权、路由、计费、观测和治理层。
+
+它不只是请求转发器，而是面向 AI-ready 应用和 Agent 工作负载的可运营网关。MAX API 将模型供应商、协议格式、渠道能力、令牌权限、成本核算、日志审计、限流、缓存和多模态任务纳入统一治理边界，帮助部署方更稳定、更可控地运行 AI 应用。
+
+<Callout type="info">
+  MAX API 不提供上游模型账号、API Key、基础模型训练能力或模型服务本身。部署方需要自行取得合法授权的上游服务，并承担相应合规义务。
+</Callout>
+
+## 核心定位
+
+- **模型治理平面**：统一管理模型入口、渠道、供应商、协议格式、模型映射、价格规则和多模态接口。
+- **AgentOps 控制平面**：为 Agent、工作流和工具调用提供独立令牌、模型访问控制、调用日志、成本归因、异常定位和运营分析。
+- **协议与供应商适配层**：兼容 OpenAI Compatible、Responses、Claude Messages、Gemini、Realtime、嵌入、重排序、图像、音频和视频任务等接口。
+- **渠道配置治理**：在渠道新建和编辑中展示能力矩阵、配置校验、模型发现、路径覆盖和任务协议模板，降低误配置风险。
+- **成本与可靠性治理**：支持表达式计费、分阶段计费 JSON、任务 rate-card、倍率计费、预扣费、失败退款、渠道加权随机、失败重试和模型限流。
+- **性能与可扩展性治理**：支持 Redis / 内存缓存、流式超时、大请求体限制、上游连接池调优、磁盘缓存、Pyroscope 性能采样和优雅关闭。
+
+## 适用场景
+
+- 组织内部 AI 模型治理平台
+- Agent 应用运行与治理底座
+- 多供应商与国产模型适配中心
+- 文本、图像、视频、音频、嵌入、重排序和实时对话的多模态任务治理平台
+- 模型成本与 Agent 成本核算平台
+- 私有化与合规运营环境
+
+## 许可证与授权边界
+
+MAX API 采用 **GNU AGPLv3** 开源协议。
+
+本项目基于 [One API](https://github.com/songquanpeng/one-api) 和 [New API](https://github.com/QuantumNous/new-api) 开发。商业使用或二次开发时，除遵守 MAX API 的授权说明外，还必须分别遵守 One API 的 MIT 许可证与 New API 的 AGPLv3 许可证；MAX API 项目方提供的临时商用授权不替代、也不免除上游项目的开源许可义务。
+
+<Callout type="warn">
+  如果你修改并通过网络向用户提供本项目服务，请理解并遵守 AGPLv3 对应源码提供等义务。长期商用授权或机构合作请联系 maxapi@max-api.ai。
+</Callout>
+
+## 二次开发与社区鸣谢
+
+如果你基于本项目进行二次开发并仅供自用，欢迎在项目主页、页脚或“关于”页面等明显位置任选一种方式保留来源：
+
+- 添加项目地址：[MAX-API-Next/MAX-API](https://github.com/MAX-API-Next/MAX-API)
+- 鸣谢社区：[MAX-API-Next](https://github.com/MAX-API-Next)
+
+满足上述任一展示要求并保持链接清晰可见，即自动获得本项目 README 说明的非永久临时商用授权，无需另行申请或等待确认。该授权仅覆盖 MAX API 项目方有权授权的新增与修改部分。
+
+## 免责声明
+
+<Callout type="error">在使用 MAX API 之前，请阅读并理解这些重要声明。</Callout>
+
+**1. 合法授权与合规使用**
+
+用户必须合法取得上游 API Key、模型服务、支付服务和其他第三方服务授权，并遵守上游服务条款和平台规则。使用本项目时，应确保相关场景符合法律法规、监管要求和内容安全要求。详见[合规与可接受使用政策](/zh/docs/legal/acceptable-use)。
+
+**2. 公众服务义务**
+
+如用户面向不特定公众提供生成式 AI 服务，应自行完成所在地法律法规要求的备案、内容安全、身份管理、日志留存、税务、支付、消费者保护及上游授权等合规义务。
+
+**3. AI 法规合规**
+
+用户必须遵守相关 AI 法规，包括[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)和其他适用的 AI 治理框架。
+
+**4. 维护者立场**
+
+<Callout type="warn">
+  MAX API 按“原样”提供，不提供任何形式的保证。开发者和维护者对使用本软件产生的任何损害或法律问题不承担责任。
+</Callout>

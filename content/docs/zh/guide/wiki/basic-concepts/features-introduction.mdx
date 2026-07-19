@@ -1,0 +1,50 @@
+---
+title: 特性说明
+description: MAX API 的模型治理、AgentOps、计费、可靠性和运维能力概览
+---
+
+## AI 模型治理
+
+1. 统一模型入口，支持 OpenAI Compatible、Responses、Claude Messages、Gemini、Realtime 等多种协议。
+2. 多供应商模型池，可接入 OpenAI、Azure OpenAI、Claude、Gemini、AWS Bedrock、Vertex AI、Ollama、DeepSeek、通义千问、智谱 GLM、Kimi、豆包、腾讯混元、文心、讯飞星火、MiniMax、零一万物、硅基流动等渠道。
+3. 支持模型列表、模型映射、用户分组、令牌分组、模型限制和价格规则管理。
+4. 渠道编辑界面提供能力矩阵，展示 `chat/completions`、`responses`、`embeddings`、`rerank`、`video tasks`、模型发现等能力状态。
+5. 渠道配置校验可提示 API Key、模型列表、Base URL、JSON 配置、Vertex AI 区域、Codex 凭证和视频任务占位符等常见风险。
+
+## AgentOps 与组织治理
+
+1. 可为 Agent、工作流、插件、工具调用或用户创建独立 API Key。
+2. 支持令牌模型范围、额度限制、过期时间和分组控制。
+3. 请求日志记录模型、渠道、分组、用户、令牌、消耗、耗时、错误和重试信息，便于定位 Agent 调用失败和成本异常。
+4. 管理员可按合规要求启用日志审计；普通用户日志接口会过滤管理员专用审计字段。
+5. 提供用户管理、分组管理、兑换码、支付、订阅、数据看板和系统设置等组织运营入口。
+
+## 计费与成本核算
+
+1. 支持传统模型倍率、分组倍率、渠道倍率、按次计费和缓存命中计费。
+2. 支持表达式计费，可用一行表达式维护阶梯价格、缓存、图像 / 音频 token、分时折扣和参数加价。
+3. 支持 `Tiered billing JSON` 批量维护多个模型的分阶段计费规则。
+4. 支持视频等异步任务的参数化 rate-card，可按供应商、模型、时长、清晰度、是否带音频、是否含视频输入等字段匹配单价。
+5. 支持预扣费、失败退款、消费日志和用量统计，适合长耗时 Agent 调用链路和异步多模态任务。
+
+## 多模态与任务协议
+
+1. 支持聊天、补全、图像、视频、音频、嵌入、重排序、实时对话等场景。
+2. 通用视频任务协议可配置任务提交路径、查询路径、任务 ID、状态、进度、结果 URL、错误消息和状态映射。
+3. 请求体透传和改写复用渠道设置中的 `Pass Through Body` 与 `Param Override`。
+4. 视频内容可通过 `/v1/videos/{task_id}/content` 代理读取，便于隐藏上游资源域名。
+
+## 性能、可靠性与部署
+
+1. 支持 SQLite、MySQL 和 PostgreSQL；本地体验可用 SQLite，生产环境建议 MySQL 或 PostgreSQL。
+2. 支持 Redis / 内存缓存，适配单机和多节点部署。
+3. 支持全局 API / Web 限流、关键接口限流、搜索限流、模型请求限流和按分组配置的模型请求配额。
+4. 支持 `STREAMING_TIMEOUT`、`STREAM_SCANNER_MAX_BUFFER_MB`、`MAX_REQUEST_BODY_MB`、`MAX_FILE_DOWNLOAD_MB` 控制长流式响应、大请求体和远程文件下载。
+5. 支持上游 HTTP 连接池与超时配置、磁盘缓存、Pyroscope 性能采样、优雅关闭和额度缓存落盘。
+
+## 登录、安全与合规
+
+1. 支持 JWT、WebAuthn/Passkeys、OAuth、OIDC、Telegram、Discord、LinuxDO 等登录方式。
+2. 支持管理员、普通用户、分组、令牌和模型访问控制。
+3. 支持请求体大小限制、流式超时控制、错误日志、运行状态检查和多机一致会话密钥。
+4. 面向公众提供生成式 AI 服务时，部署方应自行完成备案、内容安全、实名、日志留存、税务、支付和上游授权等合规事项。

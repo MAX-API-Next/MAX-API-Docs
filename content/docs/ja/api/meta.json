@@ -1,0 +1,7 @@
+{
+  "title": "APIリファレンス",
+  "description": "MAX API の完全なインターフェースドキュメント",
+  "icon": "Code",
+  "root": true,
+  "pages": ["index", "ai-model", "management"]
+}

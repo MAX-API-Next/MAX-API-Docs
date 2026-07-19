@@ -1,0 +1,1967 @@
+---
+title: 変更履歴
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn" title="バージョンログ情報 · データ更新日時 2026-7-19 03:55:53">
+すべての履歴バージョンを表示するには、[GitHub Releases ページ](https://github.com/MAX-API-Next/MAX-API/releases)をご覧ください。このページは定期的に最新の更新情報を取得します。
+</Callout>
+
+## v1.0.4-preview.5
+
+<Callout type="info" title="最新リリース版 · 公開日 2026-07-16 02:55:00 (UTC+8)">
+
+> [!WARNING]
+> # v1.0.4 正式版发布继续阻断
+>
+> 正式发布前进一步核查发现，Claude Messages、OpenAI Responses、Gemini、Realtime、OpenAI 音频和 MiniMax TTS 的 usage 归一化与最终结算存在多类同源缺陷，可能导致输出 token、缓存、图片、音频或精确字符用量未进入日志、普通倍率计费或 `tiered_expr` 结算。由于这些问题直接影响账务准确性，v1.0.4 暂不进入正式版，先发布 v1.0.4-preview.5 完成验证。
+>
+> 本预览版同时合并原计划进入 v1.0.5-preview.1 的 Dashboard、统一表格、移动导航、系统设置、渠道编辑、Tiered Billing、Ollama 模型管理、Playground、多语言和 README 更新，避免已确认修复继续滞留在下一版本分支。
+>
+> 升级前请在测试环境重点核对 Claude/Anthropic 流式输出、Responses 多模态 usage、Gemini 图片/音频生成、Realtime 音频表达式、TTS/STT、MiniMax 字符计费，以及移动端表格、Dashboard、系统设置、渠道编辑和 Playground 自动分组。
+
+> [!IMPORTANT]
+> 修复前已经产生的异常日志无法始终仅凭本地记录恢复精确用量。Claude `completion_tokens=0`、丢失的 Responses modality 明细或异常 Gemini fallback 应优先结合上游 usage、供应商账单和原始响应进行对账；根据响应文本或媒体数量重新估算只能作为辅助依据。
+
+> [!NOTE]
+> v1.0.4-preview.5 是正式版前的计费阻断修复与前端体验集中验证版本。该版本没有新增数据库迁移，但会改变部分模型在异常 usage、音频路由和分阶段计费下的最终结算结果；发布前请以最终 tag、构建产物、上游官方价格和实际部署验证结果为准。
+
+### Release Notes
+
+### GitHub 地址
+
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.4-preview.5
+
+### Highlights
+
+- **多协议 usage 与实际结算完成系统性补强**：修复 Claude、Responses、Gemini、Realtime、TTS/STT 和 MiniMax 在最终 usage、BillingUsage 或细分 token 归一化中的缺口。
+- **Claude/Anthropic 流式输出恢复完整**：`message_delta` 缺少 `output_tokens` 时会从累计 `CompletionTokens` 回填，并同步写回客户端 JSON；上游已有非零值继续优先保留。
+- **Responses 多模态明细完整保留**：非流式、流式和 Compact 统一复制缓存创建、文本、图片、音频及 reasoning 等输入输出明细，并支持官方 `output_tokens_details`。
+- **Gemini fallback 支持混合模态**：候选总量为零时可同时恢复 reasoning、文本、图片和音频明细，保留上游已有 modality 数据，并避免把流式 `audio/*` inline data 错算成图片。
+- **Realtime 与音频计费语义对齐**：Realtime `tiered_expr` 可读取 `cr`、`ai`、`ao`，OpenAI TTS/STT 会归一化音频明细，Responses 音频路由覆盖 `gpt-4o-audio*`、`gpt-4o-mini-audio*`、`gpt-audio*` 和带音频 usage 的模型别名。
+- **MiniMax TTS 使用精确字符用量**：上游 `usage_characters` 会直接进入输入 token、日志和倍率结算，缺失时才回退本地估算。
+- Dashboard 首页由固定装饰横幅升级为真实运营摘要，集中展示请求、额度、模型与密钥状态，让异常和风险更容易在首屏识别。
+- 统一 DataTable 改为根据内容容器宽度切换布局，不再只依赖浏览器视口；移动端支持行选择、批量操作和更安全的长内容展示。
+- 应用端与公开页面 Header 完善响应式导航，将语言、主题、配置和 GitHub 等低频入口收进紧凑工具菜单，并保留移动端通知入口。
+- 全局查询错误策略完成收敛：Dashboard、API Key、模型等普通请求失败时保留当前页面、筛选和操作上下文，通过局部错误状态提供重试，不再因任意 HTTP 500 直接跳转 `/500`。
+- 设置页增加结构化加载骨架、局部错误恢复和更完整的表单语义，Switch 标签、说明、错误信息与禁用状态可被键盘和辅助技术正确识别。
+- 修复公开首页 Hero 在窄屏下横向扩展和内容裁切的问题，390px 等移动视口下页面宽度保持在可视区域内。
+- 修复 Playground 选择 `auto` 或 `auto:*` 模型分组后无法选择模型的问题，自动分组现在会正确加载用户模型集合。
+- 渠道编辑、Param Override 和 Tiered Billing 等大型交互模块完成分层整理，并补齐异步状态、表单关联和关键工具函数测试，降低后续维护与回归风险。
+- 法语、日语、俄语和越南语翻译继续补齐，修复日语插值与越南语 Tiered Billing 文案，并完善相关屏幕阅读器文本。
+- 六种公开 README 语言新增二次开发、社区鸣谢和授权边界说明，进一步明确 AGPLv3、临时商用授权及上游项目许可之间的关系。
+
+### Critical Billing Fixes
+
+- **P0 — Claude `message_delta` 输出 token 清零**：最终事件或上游快照缺少 `OutputTokens` 时，从已累计的 `CompletionTokens` 恢复；修复值同时进入 `BillingUsage`、日志、结算和客户端 `usage.output_tokens`。
+- **P1 — OpenAI Responses 丢失多模态 usage**：非流式、流式和 Compact 不再只保留总量与部分缓存字段，输入侧 `cached_creation_tokens`、text/image/audio 和输出侧 reasoning/text/image/audio 明细均可进入内部结算。
+- **P1 — Gemini fallback 覆盖或漏算 modality 明细**：fallback 改为按候选 token 而非包含 reasoning 的 completion 判断；原始缓存、工具和 modality metadata 会被保留，图片估算写入 `ImageTokens`。
+- **P1 — Gemini 混合文本与图片只记录一种输出**：文本估算和 `imageCount * 1400` 可同时进入候选总量与 `CandidatesTokensDetails`；已有非零 IMAGE/AUDIO/TEXT 明细不会被本地估算覆盖。
+- **P1 — Gemini 流式音频误判为图片**：inline data 仅在 MIME 为 `image/*` 时计入图片数量，`audio/*` 不再产生错误的 1400 图片 token。
+- **P1 — Realtime `tiered_expr` 缺少音频和缓存变量**：结算参数现包含缓存读取、音频输入与音频输出，并继续按表达式实际使用的变量从基础 `p/c` 中自动排除，避免重复或遗漏计费。
+- **P1 — OpenAI TTS/STT usage 和音频路由不完整**：流式 TTS 与 STT 的 `input_tokens_details` / `output_tokens_details` 会映射到统一 usage；Responses 可按模型家族或实际音频明细进入音频结算。
+- **P2 — MiniMax 精确字符数未参与结算**：`usage_characters` 现在作为 `PromptTokens`、`TotalTokens` 和文本明细参与日志及倍率结算；生产代码统一使用项目 JSON wrapper。
+- **视频任务核查**：未发现 Claude 式最终 usage 快照清零问题；按次任务保留预扣额度，其他任务仍依次使用 adaptor 实际额度、`TotalTokens` 重算或原预扣额度。
+
+### New Features
+
+- 统一表格新增容器宽度响应能力，可在侧栏展开或内容区变窄时自动切换为移动卡片布局。
+- 移动表格新增可配置的行选择与批量操作支持，并允许列通过元数据定义移动端标题、内容布局和换行策略。
+- 新增 Header 工具菜单，统一承载语言切换、主题切换、界面配置和 GitHub 等入口，减少窄屏顶部空间占用。
+- Dashboard 新增运营状态摘要和查询状态工具，支持独立处理加载、成功、空数据与失败重试状态。
+- 设置页新增结构化 Skeleton 和局部错误恢复入口，加载或请求失败时仍保持稳定页面几何。
+- Param Override 新增专用编辑器工具函数与测试，强化特殊字段类型、空键和同步字段的状态处理。
+- Tiered Billing 编辑器补充本地化 token 提示、价格字段辅助组件和计算工具测试。
+- README 新增多语言二次开发与社区鸣谢说明，公开自用二开项目适用的显示条件、临时授权范围和上游许可边界。
+
+### Improvements
+
+- 统一 Responses usage 复制入口，避免非流式、流式和 Compact 在新增 token 明细时再次发生字段漂移。
+- Gemini 候选 token 恢复改为汇总 TEXT、IMAGE、AUDIO 明细，并将 reasoning 独立计入 completion；原始 BillingUsage metadata 在估算过程中保持可追溯。
+- Gemini 流式和非流式图片识别共用严格 MIME 判断，减少不同 handler 对同一媒体类型产生不同结算语义。
+- Realtime 通过统一 `BuildTieredTokenParams` 进入分阶段结算，缓存与音频变量遵循和文本请求相同的自动排除规则。
+- OpenAI 音频接口通过统一归一化函数映射总量和细分 usage，降低 TTS/STT、流式/非流式之间的分支差异。
+- DataTable 的桌面/移动判断从 viewport media query 调整为容器尺寸观察，侧栏、抽屉和中等宽度内容区中的表格更符合实际可用空间。
+- 表格单元格不再依赖全局强制不换行；模型名、标签和其他长内容可按列契约换行，减少横向撑宽和内容裁切。
+- 移动卡片列表完善选择状态、操作区和字段展示，分页与批量操作在窄屏下保持可用。
+- 公开 Header 和应用 Header 统一移动端导航逻辑，语言、主题、配置、GitHub 与通知入口在不同断点下保持一致。
+- 移动菜单在切换回桌面布局时会主动清理页面滚动锁，避免响应式切换后页面仍无法滚动。
+- Dashboard 概览信息改用当前主题的语义色和现有卡片体系，减少固定深色、装饰网格和静态文案对首屏空间的占用。
+- Dashboard 查询状态改由明确的辅助函数描述，替代复杂嵌套条件，加载、失败和局部数据状态更容易维护。
+- 系统设置 Switch 行补齐 `id`、Label 关联、`aria-describedby`、错误提示和禁用原因，点击标签和键盘操作更加可靠。
+- 设置页面在加载、失败和恢复过程中保留主要布局结构，减少内容跳动和整页空白。
+- Ollama 模型对话框会取消过期请求、隔离不同渠道的异步响应，并在切换渠道或重新打开时重置删除状态。
+- Param Override 专用编辑器拆分为更清晰的字段组件；输入 Label 与控件建立关联，`sync_fields` 在键为空时仍保留已选类型。
+- 渠道编辑抽屉的导航、表单状态和转换逻辑进一步分离，减少大型组件内部的隐式状态耦合。
+- Tiered Billing 编辑器将字段、辅助展示和计算逻辑分层，保留原有配置契约并改善后续扩展与测试能力。
+- Markdown、分页、对话框、菜单、侧栏、Spinner 等共享组件统一部分可访问性和样式细节。
+- 修正多个无效的 `text-xsst` 样式类和零散的响应式样式问题，避免构建后样式静默失效。
+- 多语言同步报告更新，减少法语、日语、俄语和越南语中直接回退英文的新增文案。
+- Dashboard 查询工具测试改用 TypeScript 与 CI 均可识别的测试方式，避免 `bun:test` 类型声明导致 GitHub Frontend checks 失败。
+- 六种 README 的项目定位、二次开发说明和授权表述保持同步，明确临时授权只覆盖项目方有权授权的新增与修改部分。
+
+### Bug Fixes
+
+- 修复 Claude 流式最终快照和 `message_delta` JSON 未携带累计输出 token，导致日志、结算或客户端 usage 中 `output_tokens=0` 的问题。
+- 修复 Responses 重新构造 usage 时丢失缓存创建、图片、音频、文本及输出 reasoning 明细的问题。
+- 修复 Responses DTO 未接收官方 `output_tokens_details`，导致部分输出明细在反序列化阶段消失的问题。
+- 修复 Gemini 仅因 reasoning 非零就跳过候选 token fallback，以及重建 BillingUsage 时丢失缓存、工具和 modality metadata 的问题。
+- 修复 Gemini 图片 fallback 未标记 `ImageTokens`、混合文本图片漏算图片、已有细分值被估算覆盖和音频 inline data 被误识别为图片的问题。
+- 修复 Realtime 分阶段表达式中的 `cr`、`ai`、`ao` 永远为零，音频 token 也无法按表达式变量从 `p/c` 自动排除的问题。
+- 修复 OpenAI 流式 TTS 只复制总 token、STT 未映射输入音频明细，以及 Responses 音频模型家族识别不完整的问题。
+- 修复 MiniMax TTS 上游精确字符数只写入 `TotalTokens`、实际倍率结算仍使用本地估算的问题。
+- 修复公开首页 Hero 网格在 320px、390px 等窄屏下被内容撑到视口之外，导致标题、说明和标签被横向裁切的问题。
+- 修复任意 React Query 请求返回 HTTP 500 时全局跳转 `/500`，导致表单、筛选、分页和任务上下文丢失的问题。
+- 修复 Dashboard 查询失败时缺少局部错误展示与重试入口的问题。
+- 修复应用 Header 在移动端直接隐藏 TopNav，导致已实现的移动导航无法显示的问题。
+- 修复移动菜单打开后切换到桌面宽度，`body` 滚动锁可能残留的问题。
+- 修复表格只按视口宽度切换布局，侧栏展开后内容区已经过窄却仍渲染桌面表格的问题。
+- 修复表格默认 `whitespace-nowrap` 使长模型名、标签或描述撑宽容器的问题。
+- 修复移动表格统一隐藏选择和批量操作，管理员在手机上无法完成批处理的问题。
+- 修复设置 Switch 的可见 Label 未与控件关联，点击标签和辅助技术导航不可靠的问题。
+- 修复设置页加载时只显示单行文字，导致页面结构大幅跳动且失败后缺少局部恢复的问题。
+- 修复 Playground 将 `auto` / `auto:*` 作为真实 `group` 参数请求模型，导致自动分组下模型列表为空、无法选择模型的问题。
+- 修复 Ollama 模型对话框中旧渠道请求晚返回后覆盖当前渠道数据、删除状态未正确复位等异步竞态问题。
+- 修复 Param Override 中部分专用字段的 Label 未关联控件，以及 `sync_fields` 在 key 暂时为空时丢失所选类型的问题。
+- 修复 Tiered Billing token 提示未完整本地化、部分状态计算在空值场景下不稳定的问题。
+- 修复日语翻译插值格式异常和越南语 `Save tiered billing`、`Tiered Billing`、保存成功提示及 JSON 标签仍显示英文的问题。
+- 修复 Dashboard 测试直接导入 `bun:test`，导致 GitHub Actions 执行 `tsc -b` 时找不到模块类型声明的问题。
+
+### Compatibility Notes
+
+- 本预览版会改变部分异常 usage 的最终结算结果：修复后此前为零或被当作普通文本的输出、缓存、图片、音频和字符用量可能产生正确费用，请在升级前核对模型价格与表达式配置。
+- Claude/Anthropic 流式客户端现在可能在最终 `message_delta.usage.output_tokens` 中收到本地累计回填值；已有非零上游值不会被覆盖。
+- Responses 内部日志和结算会保留更多 `input_tokens_details`、`output_tokens_details` 和 `completion_tokens_details`；依赖旧零值行为的对账脚本应同步更新。
+- Gemini 在上游候选总量为零但存在可见输出时会使用本地估算；图片仍按每张 1400 token 估算。混合文本和图片会分别记录，最终候选总量为各 modality 之和。
+- Gemini 上游已提供的非零 TEXT、IMAGE 或 AUDIO 明细优先于本地估算；音频 inline data 不会在缺少音频计量依据时被错误改按图片计费。
+- Realtime `tiered_expr` 现在可使用 `cr`、`ai`、`ao`，引用这些变量时会改变 `p/c` 的归一化结果；升级前应复核实时音频模型表达式。
+- `gpt-4o-audio*`、`gpt-4o-mini-audio*`、`gpt-audio*` 或返回音频 token 明细的 Responses 请求会进入音频结算路径。
+- MiniMax TTS 的倍率结算改用上游 `usage_characters`；上游精确字符数与历史本地 token 估算存在差异时，升级后费用可能变化。
+- 本预览版没有新增数据库字段或迁移要求，也没有改变上述前端模块使用的后端 API 数据格式。
+- 普通 React Query 请求返回 HTTP 500 时不再自动跳转 `/500`；页面会保留当前上下文并显示局部错误与重试。依赖旧跳转行为的自动化测试需要更新。
+- Playground 选择 `auto` 或 `auto:*` 分组时会省略模型列表请求中的 `group` 参数，这是自动分组的预期行为；显式分组仍按原有参数请求。
+- DataTable 的移动布局现在取决于表格容器宽度，而不是只看浏览器视口；侧栏、嵌套页面或窄内容区可能比以前更早切换为卡片列表。
+- 移动表格可按页面配置暴露行选择和批量操作；请检查高风险批量操作的确认流程、权限和触控可用性。
+- Header 的语言、主题、配置和 GitHub 入口在窄屏下会进入统一工具菜单；通知入口仍保留在应用 Header。
+- Ollama 模型请求支持取消过期加载；快速切换渠道时，旧请求结果不会再更新当前对话框。
+- Param Override、渠道编辑和 Tiered Billing 的内部组件结构已调整，但现有配置数据格式与后端接口保持不变。
+- README 已增加二次开发、社区鸣谢与临时商用授权说明。使用、分发或二次开发前，请同时核对 AGPLv3、显示条件、临时授权适用范围以及 One API、New API 等上游项目的许可要求。
+- 正式环境升级前建议重点复核 usage 对账、模型倍率、分阶段计费、Dashboard、系统设置、渠道编辑、Tiered Billing、Ollama、Playground、移动导航以及移动表格的失败重试和批量操作流程。
+
+### Verification
+
+本预览版已完成以下针对性验证；正式发布前仍建议在最终 tag 和发布构建上重新执行：
+
+- `go test ./relay/channel/gemini -count=1`
+- `go test ./dto ./service -count=1`
+- `go test ./relay/channel/claude ./relay/channel/openai ./relay/channel/minimax ./relay -count=1`
+- `go vet ./relay/channel/claude ./relay/channel/openai ./relay/channel/gemini ./relay/channel/minimax ./dto ./service ./relay`
+- Claude `OutputTokens` 缺失回填、上游非零值保留和 `message_delta.usage.output_tokens` JSON 写回回归测试
+- Responses 非流式、流式、Compact 多模态 usage 与官方 `output_tokens_details` 回归测试
+- Gemini reasoning+文本、纯图片、文本+图片、已有图片明细、已有音频明细和流式音频 MIME 分类回归测试
+- Realtime `cr/ai/ao` 参数与 `p/c` 自动排除回归测试
+- OpenAI 流式 TTS、STT 输入明细、Responses 音频模型家族及模型别名回归测试
+- MiniMax 上游字符用量与本地估算 fallback 回归测试
+- `cd web/default && bun run typecheck`
+- `cd web/default && bun run build:check`
+- Dashboard、Playground、Param Override 与 Tiered Billing 共 17 项针对性前端测试
+- `cd web/default && bun run i18n:sync`
+- 相关变更文件的 ESLint 与 Prettier 定向检查
+- `git diff --check`
+- 390px 与 1280px 浏览器视口回归检查
+- 390px 首页验证 `scrollWidth === innerWidth`，确认无横向溢出
+- 移动菜单打开后切换到桌面宽度，验证页面滚动锁可以正确清理
+
+> 说明：当前仓库的全量 `bun run lint` 与全量格式检查仍存在与本版本无关的历史基线问题，因此本稿不将其列为已通过项。正式版发布前仍建议在最终分支执行完整后端、前端和部署回归。
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.4-preview.4...v1.0.4-preview.5
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/checksums-linux.txt">checksums-linux.txt</a> (188 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/checksums-macos.txt">checksums-macos.txt</a> (97 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/checksums-windows.txt">checksums-windows.txt</a> (95 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/max-api-arm64-v1.0.4-preview.5">max-api-arm64-v1.0.4-preview.5</a> (69.4 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/max-api-macos-v1.0.4-preview.5">max-api-macos-v1.0.4-preview.5</a> (89.0 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/max-api-v1.0.4-preview.5">max-api-v1.0.4-preview.5</a> (72.1 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.5/max-api-v1.0.4-preview.5.exe">max-api-v1.0.4-preview.5.exe</a> (73.8 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.5.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.5.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.4-preview.4
+
+<Callout type="note" title="リリース版 · 公開日 2026-07-13 10:35:42 (UTC+8)">
+
+>[!WARNING] 发布阻断：Claude/Anthropic 流式输出 token 计费回归。 截至 2026-07-16，v1.0.4-preview.4 当前代码在 Claude/Anthropic 流结束时会正确解析顶层 CompletionTokens，但生成最终 BillingUsage 快照时遗漏 OutputTokens，导致用量日志中的 completion_tokens 可能为 0，输出 token 也可能未进入实际结算。
+
+>该问题按响应处理器而不是模型名称划分：Anthropic 原生、AWS Bedrock Claude、Vertex Claude 模式、Advanced Custom Anthropic Messages，以及通过 /v1/messages 复用 Claude 流式处理器的兼容渠道都可能受影响。Claude 非流式请求以及原生 OpenAI Chat、OpenAI Responses、Gemini 路径未发现同类问题。
+
+>在修复和完整回归通过前，不应将当前 v1.0.4-preview.4 用于需要准确计费的 Claude/Anthropic 流式生产请求；临时可强制 stream: false，历史受影响请求应结合上游 usage 记录进行对账。
+
+
+> # 重要升级说明
+>
+> v1.0.4-preview.4 覆盖计费结算、GPT-5.6 `cache_write_tokens` 缓存写入计费、Responses/Chat 跨协议转换、异步任务计费、渠道请求改写、日志审计、access token 生成与二次验证、前端富文本渲染、登录注册合规和多数据库兼容等关键路径。升级前建议先在测试环境验证主要模型调用、缓存创建价格、分阶段计费表达式、任务类渠道、用户额度变更、用量日志筛选、Playground、OAuth/注册登录、access token 重新生成、订阅重置和管理端渠道配置。
+>
+> 如果部署使用 GPT-5.6、Responses API、缓存创建倍率或自定义计费表达式，请重点检查 `cache_write_tokens` 是否按预期进入缓存创建费用；同时复核 Param Override、自动分组/自动路由、Redis 配额缓存、旧 MySQL/PostgreSQL 数据库和反向代理真实 IP 配置。
+
+> [!NOTE]
+> v1.0.4-preview.4 是预览版草稿，整理自当前分支中已合入的 v1.0.4 系列变更，并补充最近确认的 GPT-5.6 缓存写入计费、分阶段计费、日志审计、额度安全、密码重置和 access token 安全验证更新。发布前请以最终 tag、上游官方价格和实际验证结果为准。
+
+### Release Notes
+
+### GitHub 地址
+
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.4-preview.4
+
+### Highlights
+
+- 补强 OpenAI Responses 与 Chat Completions 的双向兼容转换，覆盖普通响应、流式事件、工具调用、reasoning 文本、usage 聚合和跨协议 billing usage 恢复。
+- 完善 OpenAI / Claude / Gemini 语义化 `BillingUsage`，结算时优先使用原始协议 usage，并保留 cache、cache write、image、audio、reasoning 等细分 token。
+- 补齐 GPT-5.6 Responses usage 中 `input_tokens_details.cache_write_tokens` 的计费链路，非流式、流式、compact 和 Responses/Chat 转换均会保留缓存写入 token，不再在跨协议后退化为普通输入 token 或被遗漏。
+- `cache_write_tokens` 会归一为缓存创建 token：ratio 模式使用 `CacheCreationRatio`，`tiered_expr` 模式进入 `cc` 变量，并从基础输入 token 中扣除后单独计价，避免漏计或重复计费。
+- 引入统一 quota 饱和转换策略，避免超大计费结果发生 int32 wraparound；严格预扣费路径只拒绝真正越界值，允许精确 `MaxInt32` / `MinInt32` 边界。
+- 异步任务渠道新增更通用的 rate-card / generic billing 框架，支持按输入、输出、图片数量、时长、任务结果和渠道元数据计算费用。
+- 任务类渠道 Param Override 在计费前生效，header override 会在 adaptor 默认值之后写入上游请求，局部配置错误保持本地失败而不触发无意义重试。
+- Doubao、Ali/Kling/Wan、Gemini、Vidu、Vertex、Hailuo、Jimeng、Sora 等任务渠道补齐请求体构造、参数透传、计费和回调结果处理细节。
+- 管理端渠道抽屉、模型/分组倍率编辑器、自动路由展示、OAuth 回调提示、订阅重置和用量日志筛选得到集中优化。
+- Playground 增强选项持久化、清理历史、长输入和选区处理，减少常见交互中的状态丢失与布局问题。
+- 富文本与 HTML 渲染路径继续收紧安全边界，统一用户可见内容展示并降低异常 Markdown/HTML 输入导致的前端崩溃风险。
+- 日志审计字段写入更稳健，quota saturation 和 billing path 只在有效 `admin_info` 容器中追加，不再覆盖异常字段或在 nil 目标上记录误导性 warning。
+- 用户额度管理和密码重置流程补强安全边界：管理端额度保持在 JavaScript 可精确表示的整数范围内，密码写入失败时重置令牌仍可重试。
+- access token 生成改为 POST 敏感操作并强制执行二次验证、禁缓存和关键操作限流；验证状态绑定当前用户，避免同一浏览器切换账号后继承旧验证结果。
+- 无 2FA 或 Passkey 的普通用户可在 `access_token` 专用作用域内使用账户密码完成重验证，同时继续优先使用已启用的 Passkey 或 2FA。
+
+### New Features
+
+- 新增 `service/openaicompat` 兼容层，用于 Responses request/response 与 Chat Completions request/response 互转。
+- 新增 Gemini Responses adaptor，支持 Gemini 通道参与 Responses API 兼容路径。
+- 新增 `dto.BillingUsage` 协议快照结构，支持 OpenAI、Claude、Gemini usage 在跨协议转换后仍按原始语义结算。
+- `InputTokenDetails` 新增 `cache_write_tokens` 字段和共享复制逻辑，支持在 `input_tokens_details`、`prompt_tokens_details` 与 `BillingUsage` 之间完整传递 GPT-5.6 缓存写入用量。
+- 新增 `tiered_expr` 分阶段计费模式，单条表达式即可描述模型的基础价格、长上下文阶梯、缓存价格、媒体 token 价格和请求条件倍率。
+- 新增分阶段计费可视化编辑器与表达式编辑器，支持价格档位、兜底档位、请求体/header/时间规则、实时费用预估、命中档位展示和 JSON 批量配置。
+- 新增 GPT-5.4 Priority/Flex、Claude 长上下文与 Fast Mode、多模态和时段折扣等模板，管理员也可按实际上游价格创建其他模型表达式。
+- 计费表达式支持 `p`、`c`、`len`、`cr`、`cc`、`cc1h`、`img`、`img_o`、`ai`、`ao` 等变量，以及 `param()`、`header()` 和时间函数，可覆盖文本、缓存、多模态和请求级价格规则。
+- 新增 quota math helper 和测试，统一 float、decimal、rounding 到 quota 的饱和处理。
+- 新增 protected fetch client 与管理端模型拉取防护测试，用于统一 SSRF 边界和响应体关闭行为。
+- 新增任务通用请求体构造、路径配置和协议配置工具，减少各任务 adaptor 重复实现。
+- 新增任务通用计费模块和覆盖测试，用于图像、视频、音频等异步任务统一结算。
+- 新增订阅重置入口和管理端对话框，便于管理员批量处理用户订阅状态。
+- 新增用量日志 quota 区间筛选控件，普通日志和任务日志筛选栏都可按额度状态过滤。
+- 新增自动路由/自动分组前端展示工具，模型价格页可解释自动链路的实际分组来源。
+- 新增 OAuth 回调地址提示组件，帮助管理员检查第三方登录回调配置。
+- 新增安全验证方式发现接口和作用域化密码重验证，前端可根据当前账户实际可用的 Passkey、2FA 或密码方式打开对应验证界面。
+- 新增多语言文案，覆盖新增设置项、日志筛选、订阅操作、渠道表单和计费说明。
+
+### Improvements
+
+- Responses 转 Chat 后会把 `input_tokens_details` 映射回 `prompt_tokens_details`，并在 BillingUsage 恢复时保留细分 input token，避免 cache write、cached、image、audio input 在结算中丢失；六类 input token 字段改由 DTO 共享映射统一维护，降低后续新增字段时跨路径漏同步的风险。
+- Chat 转 Responses 会保留 usage 细节和 billing usage 快照，跨协议返回后仍能走统一计费入口。
+- Claude / Gemini usage 恢复逻辑补齐 cache creation、cache read、thoughts/reasoning 和 modality token 映射。
+- OpenAI `BillingUsage` 恢复会从 `input_tokens_details` 补齐 `prompt_tokens_details.cache_write_tokens`，保证 GPT-5.6 Responses 转 Chat 后仍使用原始缓存写入数据结算。
+- `cached_creation_tokens` 与 `cache_write_tokens` 作为同类缓存创建统计进行兼容归一化；两者同时存在时取较大值，不直接相加，避免同一批缓存写入被重复收费。
+- 分阶段计费使用 `len` 判断上下文档位；`len` 始终表示包含缓存 token 在内的完整输入长度，避免大量缓存命中后误进入较低的长上下文价格档位。
+- 表达式会根据实际引用的变量自动从 `p` / `c` 中排除已单独计价的缓存、图片和音频 token，减少基础 token 与细分类 token 重复计费。
+- 预扣费会冻结模型名、表达式、请求条件、分组倍率和预计命中档位；结算时使用同一快照与实际 usage 重新计算，避免请求处理中途修改配置导致前后价格不一致。
+- 用量日志会写入归一化后的 `cache_write_tokens`，分阶段计费结果还会记录 billing mode、表达式和命中档位，便于管理员核对缓存创建费用。
+- 计费表达式 rounding 增加 quota 专用转换，降低浮点乘法和极端金额输入带来的边界风险。
+- quota saturation 会写入日志 `admin_info.quota_saturation`，便于管理员追踪被截断的原始值和 clamp 类型。
+- 预扣费和结算路径统一使用 quota helper，超大价格、倍率或 token 数不会因为整数溢出变成反向扣费。
+- BillingSession 预扣费和 legacy 预扣费入口共用同一套 QuotaClamp / 负数 quota 校验，保持模型价格错误的状态码、错误码和 skip-retry 语义一致。
+- 上游错误处理限制本地日志体积，保留排障信息同时减少异常响应占用内存。
+- 流式扫描器和 ping 处理逻辑得到重构，减少空 chunk、ping frame 和异常 EOF 对流式 relay 的影响。
+- API request 构造逻辑补充上下文、参数和 header 合并测试，降低高级自定义渠道回归风险。
+- 渠道表单抽屉拆分更多字段状态和转换逻辑，复杂通道配置更容易维护。
+- 分组倍率和模型倍率编辑器优化输入、验证和视觉反馈，减少配置错误。
+- 模型价格可视化编辑器的空状态文案改为显式条件计算，搜索、未设置价格和默认空列表状态更容易维护。
+- 自动路由显示会过滤不可见分组和重复分组，并保留旧配置 fallback。
+- 用量日志 retry / empty-retry / quota 筛选逻辑更清晰，前端过滤和后端聚合语义保持一致。
+- 用户、token、订阅和兑换码相关模型更新路径增加零值安全处理，避免局部更新意外覆盖会计字段。
+- 管理端用户额度对话框增加安全整数校验、行内错误提示和多语言文案，增加、扣减或覆盖操作在提交前会检查输入值与计算结果。
+- 密码重置验证码增加并发占用和提交语义：密码更新成功后才消费验证码，数据库写入失败或异常退出时释放占用并允许在有效期内重试。
+- access token 对话框接入统一安全验证流程，并按实际可用性选择默认方式；仅启用 2FA 的用户不会再进入不可用的 Passkey 状态。
+- `/api/verify` 同时按客户端 IP 和已认证用户 ID 限制关键验证请求，降低通过代理轮换扩大密码或验证码尝试次数的风险。
+- OpenAPI 补齐 `POST /api/user/token`、`POST /api/verify` 请求体以及 `GET /api/verify/methods?scope=access_token` 的参数与验证方式枚举。
+- 订阅、任务和日志模型增加 CAS / row-lock / 异步落库测试，降低并发状态回退风险。
+- README 和多语言 README 调整为新的产品定位和能力描述，保持各语言文档同步。
+
+### Bug Fixes
+
+- 修复 GPT-5.6 Responses 返回 `cache_write_tokens` 时，部分非流式、流式、compact 或 Responses → Chat 路径没有把该字段带入最终 `PromptTokensDetails`，导致缓存写入 token 可能按普通输入价格结算或未按缓存创建倍率计费的问题。
+- 修复跨协议 `BillingUsage` 恢复只保留 input token 总数和部分明细、遗漏 `cache_write_tokens`，导致转换后的实际结算与上游原始 usage 不一致的问题。
+- 修复 Responses 转 Chat / 跨协议后 `BillingUsage` 恢复只保留 token 总数，导致 input token 细分项从结算视角消失的问题。
+- 修复 strict quota 把精确 `2147483647` 和 `-2147483648` 误判为 clamp 错误的问题。
+- 修复 `attachQuotaSaturationToOther` 在 `admin_info` 已存在但不是 map 时覆盖原值的问题。
+- 修复 `attachQuotaSaturation` 在 `other == nil` 时仍输出“已写入审计信息”语义 warning 的问题。
+- 修复部分 OpenAI Responses / Chat 转换路径中 tool call id、reasoning、finish reason、usage 聚合和流式 done event 不一致的问题。
+- 修复 Gemini 非 function tool、Responses relay 和 usage metadata 在跨协议路径中的兼容问题。
+- 修复 Doubao 任务可选标量字段使用非指针类型时，显式 `0` / `false` 可能在转发时被 `omitempty` 丢弃的问题。
+- 修复任务 Param Override 在计费后才生效，导致实际上游请求与本地计费参数可能不一致的问题。
+- 修复 task header override 不能稳定覆盖 adaptor 默认 header 的问题。
+- 修复本地 Param Override 配置错误被当作可重试上游错误的问题。
+- 修复异步任务回调和轮询结算中部分任务状态、费用、结果字段缺失或类型不一致的问题。
+- 修复用量日志 retry 筛选、任务日志 quota 筛选和聚合读路径中的类型/边界问题。
+- 修复富文本 HTML 渲染和 sanitizer 在部分异常输入下的展示或安全边界问题。
+- 修复 Playground 清空历史、长文本输入、选项恢复和请求参数同步中的前端状态问题。
+- 修复管理端用户设置、用户资料、余额调整和 token 更新中零值字段无法正确保存或可能被误覆盖的问题。
+- 修复管理员可把用户额度设置到 `int64` 上限，导致超过 `Number.MAX_SAFE_INTEGER` 后前端展示和回传值发生精度丢失的问题。
+- 修复密码重置先销毁验证码再更新密码，导致密码哈希或数据库写入失败后重置链接提前失效的问题。
+- 修复 access token 通过 GET 生成且缺少禁缓存与二次验证，可能被缓存、预取或误重放的问题。
+- 修复安全验证 session 只记录时间戳，账号 A 验证后在同一浏览器会话登录账号 B 时，账号 B 可能继承验证状态的问题。
+- 修复未启用 2FA 或 Passkey 的普通用户无法生成 access token，以及仅启用 2FA 时前端仍默认选择 Passkey 的问题。
+- 修复 `/api/verify` 仅按 IP 限流，攻击者可通过切换代理地址扩大同一账户验证尝试次数的问题。
+- 修复管理用户接口收到非正用户 ID 时可能形成空条件查询并错误命中首条用户记录的问题。
+- 修复订阅重置、订阅弹窗和订阅 delta 返回值在管理端交互中的状态同步问题。
+- 修复模型列表、分组显示和自动链路价格页在自动分组配置缺失或别名分组存在时的展示问题。
+- 修复部分数据库迁移、命名锁、quota bigint 和老库兼容路径在 MySQL/PostgreSQL/SQLite 上的差异问题。
+- 修复日志审计写入在异常 `admin_info` 结构下可能丢失已有审计元数据的问题。
+- 修复 `jsonwrapcheck` allowlist 与当前代码不一致，减少业务代码直接调用标准 JSON marshal/unmarshal 的回归空间。
+
+### Compatibility Notes
+
+- 任务类渠道如果依赖 Param Override，请注意本版本会在计费前应用最终请求参数；升级后计费结果会更贴近实际发送给上游的 payload。
+- header override 现在会在 adaptor 默认 header 后生效；如果旧配置依赖默认值覆盖自定义值，需要重新检查渠道配置。
+- 本地 Param Override 配置错误不再进入重试链路；这类错误应作为配置问题修正，而不是依赖自动重试。
+- Responses API 兼容路径会尽量保留原始协议 usage；如果外部系统读取 usage 字段，请同时关注 `prompt_tokens_details`、`input_tokens_details` 和 `billing_usage`。
+- GPT-5.6 上游可能在 `input_tokens_details.cache_write_tokens` 返回缓存写入量；该值会按缓存创建 token 处理。ratio 模式需要正确配置 `CacheCreationRatio`，表达式模式应使用 `cc` 为缓存写入单独定价。
+- 如果上游同时返回 `cached_creation_tokens` 和 `cache_write_tokens`，系统会取两者中的较大值作为归一化缓存创建总量，不会相加；外部账单对账工具应采用相同口径。
+- 计费表达式中的系数是每 100 万 token 的实际美元价格，不再隐含旧倍率表的 `/2`、completion multiplier 或其他换算；从 ratio 模式迁移时不能直接复制旧倍率数值。
+- 未显式把模型切换为 `tiered_expr` 时，现有模型继续使用 `ModelRatio` / `ModelPrice` 计费；启用后该模型的预扣费与实际结算以表达式和请求条件为准。
+- GPT/OpenAI usage 的 `prompt_tokens` 通常包含缓存和媒体 token；表达式只有在引用 `cr`、`img`、`ai` 等变量时才会自动拆分对应 token。长上下文条件应使用 `len`，不要使用拆分后的 `p`。
+- strict quota 只拒绝超出 int32 可表示范围的值；精确边界值不再记录 saturation 或返回错误。
+- 管理端用户额度调整接口只接受不超过 `9007199254740991` 的正整数变更量，加减结果必须保持在 JavaScript 安全整数区间，覆盖值必须位于 `0..9007199254740991`。历史超范围额度可通过覆盖操作恢复到安全范围，依赖更大 `int64` 额度的外部管理脚本需要同步调整。
+- 预扣费入口遇到 quota clamp 或负数预扣费时仍返回 `model_price_error`、HTTP 400 和 skip-retry；本次只是统一校验来源，不改变外部错误契约。
+- quota saturation 审计只会写入 map 形态的 `admin_info`；如果调用方传入了异常类型，已有值会被保留但不会追加 saturation 详情。
+- 异步任务通用计费会让部分历史上未精确计费的任务按 rate-card 细则结算；建议先在测试环境核对常用任务模型的价格配置。
+- 自动路由展示更贴近实际配置，但只展示当前可见分组；隐藏分组不会被前端强行暴露。
+- 用量日志筛选项更细，旧的 retry 过滤理解应区分普通 retry 与 empty retry 等子类型。
+- access token 生成接口已从 `GET /api/user/token` 改为 `POST /api/user/token`；依赖旧接口的脚本、SDK 或自动化客户端必须同步调整请求方法，旧 GET 路由不再可用。
+- 密码重验证仅作为 `access_token` 作用域的回退方案，并且只在账户没有启用 2FA 和 Passkey 时提供；密码验证结果不能用于其他敏感操作。
+- `PasswordLoginEnabled=false` 只禁止新的密码登录，不会使已登录账户现有的密码凭证失效；符合回退条件的用户仍可用当前密码完成 access token 重验证。
+- 多数据库迁移继续要求 SQLite、MySQL 和 PostgreSQL 同时兼容；升级前建议备份数据库，并在老库上先跑启动迁移验证。
+
+### Verification
+
+发布前建议按最终 tag 和发布分支重新执行并更新结果：
+
+- `go test ./common ./service ./service/openaicompat -count=1`
+- `go test ./dto ./service ./service/openaicompat ./relay/channel/openai -run "Test(CopyInputTokenDetails|CalculateTextQuotaSummaryPreservesResponsesInputDetailsThroughBillingUsage|CacheWriteTokensTotal|ResponsesResponseToChatCompletionsResponse)" -count=1`
+- `go test ./pkg/billingexpr -run "Test(Len|Cache|ComputeTieredQuota|RunExpr)" -count=1`
+- `go test ./relay/helper -run "Test(ModelPriceHelperTiered|ResolveIncomingBillingExprRequestInput)" -count=1`
+- `go test ./service -run "Test(TryTieredSettle|BuildTieredTokenParams)" -count=1`
+- `go test ./... -count=1`
+- `go test ./common ./controller ./model -count=1`
+- `go test ./relay/helper -count=1`
+- `go test ./service -run TestAttachQuotaSaturation -count=1`
+- `go test ./service -run TestPreConsumeValidationSharedByBillingAndQuota -count=1`
+- `go test ./common -run TestQuotaFromFloatStrictAcceptsExactInt32Boundaries -count=1`
+- `go test ./service -run TestCalculateTextQuotaSummaryPreservesResponsesInputDetailsThroughBillingUsage -count=1`
+- `go test ./controller ./model ./middleware ./relay/helper`
+- `go test ./controller ./middleware ./router -count=1`
+- `go test ./router -run 'Test(UniversalVerifyRateLimitFollowsUserAcrossIPs|SecureVerificationOpenAPIIncludesScopeAndRequestBody)' -count=1`
+- `go test ./router -run TestUniversalVerifyRateLimitFollowsUserAcrossIPs -count=3`
+- `go test ./relay/channel/openai ./relay/channel/gemini ./relay/channel/claude ./relay/channel/advancedcustom`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel/task/ali`
+- `go run ./tools/jsonwrapcheck`
+- `cd web/default && bun run typecheck`
+- `cd web/default && bun test src/features/users/lib/quota-safety.test.ts`
+- `cd web/default && bun test tests/secure-verification-method-selection.test.ts`
+- `cd web/default && bun run i18n:sync`
+- `cd web/default && bun test`
+- `git diff --check -- service/billing.go service/pre_consume_quota.go web/default/src/features/system-settings/models/model-ratio-visual-editor.tsx`
+- `git diff --check`
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.3...v1.0.4
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/checksums-linux.txt">checksums-linux.txt</a> (188 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/checksums-macos.txt">checksums-macos.txt</a> (97 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/checksums-windows.txt">checksums-windows.txt</a> (95 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/max-api-arm64-v1.0.4-preview.4">max-api-arm64-v1.0.4-preview.4</a> (69.4 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/max-api-macos-v1.0.4-preview.4">max-api-macos-v1.0.4-preview.4</a> (88.9 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/max-api-v1.0.4-preview.4">max-api-v1.0.4-preview.4</a> (72.1 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.4/max-api-v1.0.4-preview.4.exe">max-api-v1.0.4-preview.4.exe</a> (73.8 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.4.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.4.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.4-preview.3
+
+<Callout type="note" title="リリース版 · 公開日 2026-07-11 02:40:08 (UTC+8)">
+
+> [!WARNING]
+> # 重要安全与稳定性修复
+>
+> v1.0.4-preview.3 聚焦管理端 fetch、登录态绑定、Redis 配额缓存、验证码消费、代理信任边界、用户余额字段兼容、MySQL 老库注册兼容和用户通知设置的安全边界。受影响部署可能在特定管理操作、OAuth 绑定、密码重置/注册、高并发缓存更新、反向代理配置、用户余额调整或旧库用户注册场景中暴露 SSRF、进程 panic、缓存扣减丢失、验证码复用、IP 限流绕过、余额上限异常、弱邮箱校验或注册失败等风险。
+>
+> 建议升级后重点验证渠道模型拉取、OAuth/第三方账号绑定、密码重置、用户注册、老 MySQL 数据库上的新用户注册、用户通知邮箱保存、管理端用户余额添加/减少/覆盖、充值码兑换并发处理、模型请求限流、站点与品牌顶部导航设置、模型广场自动链路分组展示，以及 Redis 启用时的用户/token 配额缓存更新。
+
+> [!NOTE]
+> 当前 MAX API 分为正式版和 Preview 预览版。Preview 预览版用于提前开放修复和能力，便于在真实环境中验证兼容性、稳定性和安全性；正式版将在对应 Preview 预览版稳定运行后发布。
+
+### Release Notes
+
+### GitHub 地址
+
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.4-preview.3
+
+### Highlights
+
+- 加固管理端渠道模型拉取接口，`/api/channel/fetch_models` 会按系统 fetch setting 执行 SSRF URL 校验，并通过受保护 HTTP client 发送请求。
+- 修复 OAuth、GitHub、Discord、OIDC、WeChat、LinuxDo、Telegram 和邮箱绑定路径中直接 `id.(int)` 的 panic 风险，兼容 JSON session 后端反序列化出的数值类型。
+- 将 Redis 普通计数和用户/token 配额 hash 增量更新改为 Lua 原子脚本，避免 TTL 检查和增量写入之间的 TOCTOU 窗口。
+- 收紧通知邮箱格式校验，拒绝 `a@`、`@b`、`@.`、无点域名和带展示名的非纯邮箱输入。
+- 优化充值码兑换的用户级锁生命周期，锁在无引用后会从内存 map 清理，避免长期运行中按 user id 持续增长。
+- 清理 `controller/channel.go` 中已迁移到 `common.*` JSON wrapper 的历史 allowlist 条目，保持 `jsonwrapcheck` 基线与当前代码一致。
+- 将“排行榜”可见性和登录要求设置合并到“站点与品牌 - 顶部导航”，让顶部导航相关入口在同一个设置区维护。
+- 模型广场价格页会展示管理员配置的自动链路分组，以及自动路由别名到真实计费分组的处理顺序。
+- 加固验证码一次性消费语义，密码重置 token 会在校验通过时原子删除，注册成功后也会消费邮箱验证码，避免同一验证码在有效期内重复提交。
+- 收紧默认 trusted proxy 范围，仅默认信任 loopback；真实反向代理地址需要通过 `TRUSTED_PROXIES` 显式配置，降低伪造 `X-Forwarded-For` 绕过 IP 限流的风险。
+- 将用户余额、已用额度和邀请额度相关列升级为 `bigint`，并放宽管理端 quota 覆盖和增加操作的 32-bit 上限，解除约 4295 显示余额的人工操作天花板。
+- 修复 MySQL 老数据库用户注册时命名锁结果扫描可能访问不存在的 `null_int64` 表，导致注册失败的问题。
+- 补强 MySQL 用户注册命名锁释放校验，`RELEASE_LOCK()` 返回 `0` 或 `NULL` 时会明确报错，不再被误判为释放成功。
+- 修正内存模式下的模型成功率限流，失败请求不再消耗“成功请求”预算。
+- 限制上游错误响应体读取大小，避免异常 upstream 返回超大错误体时占用过多内存。
+- 在 model 层拒绝删除 root 用户，避免未来绕过 controller 角色检查的调用路径误删最高权限账号。
+
+### New Features
+
+- 新增 controller 层 session id 解析 helper，统一处理 `int`、`int64`、`float64` 和字符串形式的 session user id。
+- 为管理端模型拉取 SSRF 防护新增回归测试，覆盖私网 `base_url` 被拒绝的场景。
+- 为 session 数值兼容、通知邮箱格式和充值锁清理补充聚焦测试。
+- 新增验证码“验证并删除”原子 helper，供密码重置等一次性凭证场景复用。
+- 新增内存限流器只读检查能力，用于先判断成功率预算、成功后再记录。
+- 新增 `sql.NullInt64` 底层 SQL 行扫描回归测试，覆盖 MySQL 注册写锁结果使用的 `1` 和 `NULL` 返回值。
+- 新增 MySQL 命名锁成功状态判断测试，覆盖 `1`、`0` 和 `NULL` 三类返回值。
+- 顶部导航设置同屏管理“模型广场”和“排行榜”的展示与登录要求，保存时分别更新 `HeaderNavModules` 与 `RankingsModule`。
+- 模型广场分组筛选新增自动链路说明卡片，帮助管理员和用户理解 `auto_routes` 的真实计费分组链路。
+- 为 trusted proxy 默认值、验证码一次性消费、模型成功率限流、root 用户删除保护和上游错误体截断补充回归测试。
+
+### Improvements
+
+- `FetchModels` 拼接 `/v1/models` 前会裁剪 `base_url` 末尾斜杠，避免生成重复斜杠路径。
+- `FetchModels` 在读取响应前提前注册 `defer response.Body.Close()`，错误状态码也会释放响应体。
+- Redis 增量脚本保留原有语义：只有仍存在且带 TTL 的缓存 key 才会更新，并在同一 Redis 脚本中保留剩余 TTL。
+- OAuth 绑定类接口在 session id 缺失或格式异常时返回 API 错误，不再让类型断言 panic 影响进程稳定性。
+- 通知邮箱保存会先裁剪首尾空白，再以标准邮箱地址入库，减少用户输入差异。
+- 密码重置 token 在密码写库前完成消费，即使后续 DB 操作失败，也不会留下可被并发复用的重置凭证。
+- 注册流程在用户创建成功后消费邮箱验证码，保持验证码与实际注册结果一致。
+- 访问旧的 `/system-settings/site/rankings` 设置路径会自动跳转到 `/system-settings/site/header-navigation`，避免历史书签进入无效设置页。
+- 顶部导航保存现在并行提交普通导航模块和排行榜模块，并统一走设置页错误处理。
+- 模型广场自动链路展示会过滤空分组、重复分组和当前列表不可见分组，并在没有 `auto_routes` 配置时继续使用 legacy `auto_groups` fallback。
+- MySQL 邮箱归一化写锁改为通过 `database/sql` 的 `Row().Scan` 接收 `GET_LOCK` / `RELEASE_LOCK` 结果，避免 GORM 将 `sql.NullInt64` 误当作模型表解析。
+- MySQL 命名锁获取和释放共用同一个成功状态判断，只有返回有效的 `1` 才视为锁操作成功。
+- 模型成功率限流不再使用临时计数 key 试探容量，避免失败请求污染成功预算。
+- MySQL/PostgreSQL 启动迁移会检查用户余额相关列的现有类型，只在仍为非 `bigint` 时执行列类型调整；SQLite 保持原有兼容路径。
+- root 用户删除保护下沉到 `model.User.Delete` / `HardDelete`，调用方只传 user id 时会先读取现有角色再判断。
+- 上游错误响应超过 1 MiB 时会截断并在错误信息中标记，保留排障上下文同时控制内存占用。
+
+### Bug Fixes
+
+- 修复管理端 `FetchModels` 接收请求体 `base_url` 后使用裸 `http.Client{}` 直接请求，绕过项目 SSRF 防护的问题。
+- 修复 `FetchModels` 使用直接 `json.NewDecoder`，以及渠道密钥处理和 Ollama 拉取流中直接 `json.Marshal` / `json.Unmarshal` 的项目规范偏离问题。
+- 修复第三方账号绑定路径中 session id 如果由 JSON 后端恢复为 `float64` 会触发 panic 的问题。
+- 修复邮箱绑定路径同样直接断言 session id，可能在异常 session 类型下 panic 的问题。
+- 修复 Redis `RedisIncr` 在 TTL 读取后 key 状态变化时可能静默跳过计数更新的问题。
+- 修复用户/token 配额缓存使用的 `RedisHIncrBy` 存在同类 TTL TOCTOU 竞态的问题。
+- 修复通知邮箱只检查是否包含 `@`，导致明显非法邮箱也能保存的问题。
+- 修复 `topUpLocks` 按 user id 缓存锁对象且不清理，长期运行后可能持续增长的问题。
+- 修复密码重置 token 先校验、后删除导致两个并发请求可能同时通过校验并写入不同新密码的问题。
+- 修复注册成功后邮箱验证码仍保留到过期时间，可能被同一邮箱在窗口期内重复提交的问题。
+- 修复“排行榜”设置与顶部导航设置分散在不同站点子页，导致管理员配置顶部导航入口时需要跨区维护的问题。
+- 修复模型广场把缺失的 `auto_routes` 当成空数组后，旧版 `auto_groups` 自动分组 fallback 可能不再展示的问题。
+- 修复使用老 MySQL 数据库注册用户时，GORM 扫描 `sql.NullInt64` 可能生成 `null_int64` 表查询并返回 `Error 1146 (42S02): Table '...null_int64' doesn't exist` 的问题。
+- 修复 MySQL `RELEASE_LOCK()` 返回 `0` 或 `NULL` 时仍被当作释放成功的问题，避免锁状态异常被静默吞掉。
+- 修复管理端用户余额在数据库列仍为 `INT` 时，最终 quota 可能受 `2147483647` quota units（约 4295 显示余额）限制的问题。
+- 修复用户余额、已用额度和邀请额度相关字段在 MySQL/PostgreSQL 老库中仍保留 `INT` 类型，导致高额度用户可能被截断、溢出或写入失败的问题。
+- 修复默认 trusted proxy 包含 RFC-1918 / link-local 私网段时，处在受信任私网来源的请求可伪造 `X-Forwarded-For` 绕过 IP 限流的问题。
+- 修复内存模式下模型成功率限流把失败请求也计入成功请求预算的问题。
+- 修复上游错误响应体直接 `io.ReadAll`，异常 upstream 返回超大错误体时可能放大内存占用的问题。
+- 修复 `model.Delete` / `HardDelete` 只依赖 controller 层保护，未来直接调用 model 方法时可能误删 root 用户的问题。
+
+### Compatibility Notes
+
+- 管理端模型拉取现在受全局 fetch setting 约束。若部署确实需要从私网地址或非默认端口拉取模型列表，需要在 fetch setting 中显式允许对应私网 IP、IP 白名单或端口。
+- Redis 配额缓存更新仍只作用于带 TTL 的缓存 key；无 TTL 或不存在的 key 继续保持不更新，避免改变缓存写入边界。
+- OAuth/session id 解析现在接受 JSON session 常见的 `float64` 数值，但仍拒绝空值、零值和无法解析的类型。
+- 通知邮箱现在要求纯邮箱地址；带展示名的 `Name <user@example.com>` 不再接受，用户应保存 `user@example.com`。
+- 充值码兑换仍保持同一用户并发互斥；锁清理只发生在当前引用全部释放后，不改变并发拒绝语义。
+- 验证码和密码重置 token 现在是一旦成功校验即消费；用户重复提交同一验证码或重复打开同一重置链接会得到无效结果，需要重新发起验证码或重置邮件。
+- MySQL 部署不需要、也不应新增 `null_int64` 表；该错误来自注册写锁结果扫描方式，升级代码并重启后即可消除对应假表查询。
+- 如果 MySQL 报告命名锁未被当前连接持有或锁状态不可确认，注册写锁释放会返回显式错误；这类情况应按连接或数据库锁状态异常排查，而不是忽略。
+- 默认 `TrustedProxies` 不再包含私网网段。部署在 Nginx、Cloudflare Tunnel、内网 LB 或容器网络后方时，应通过 `TRUSTED_PROXIES` 配置真实代理 IP/CIDR，否则 `ClientIP()` 会回退到直接连接来源。
+- “站点与品牌 - 排行榜”旧 section 会重定向到“站点与品牌 - 顶部导航”；外部脚本或书签若直接打开旧 URL，建议更新到 `/system-settings/site/header-navigation`。底层 `RankingsModule` option 仍独立保存。
+- 模型广场只展示当前可见分组内的自动链路；未配置 `auto_routes` 的部署继续使用旧 `auto_groups` fallback。
+- 管理端 quota 覆盖仍拒绝负数，quota 增加仍必须为正数；MySQL/PostgreSQL 老库会在启动迁移中把 `users.quota`、`users.used_quota`、`users.aff_quota` 和 `users.aff_history` 转为 `bigint`，不再以 `2147483647` quota units 作为业务上限。升级前建议备份数据库，并确认这些列没有自定义类型约束。
+- 内存模式的模型成功率限制现在只统计 HTTP 状态码小于 400 的请求；如果部署依赖失败请求也消耗成功预算，需要改用总请求数限制表达该策略。
+- 上游错误响应体超过 1 MiB 时不会完整保留在错误信息和调试日志中，排查异常 upstream 时可结合上游日志查看完整错误体。
+- root 用户无法通过 model 层软删除或硬删除；需要处理最高权限账号时应先降级或迁移 root 身份。
+
+### Verification
+
+- `go test ./controller -run "Test(FetchModelsRejectsPrivateBaseURL|SessionUserID|NormalizeNotificationEmail|TopUpLock|UpdateUserSettingPreservesUnrelatedSettings|AdminReset.*RequiresPaymentCompliance)$"`
+- `go test ./controller -run TestQuotaBoundsValidation -count=1`
+- `go test ./model -run "TestScanNullableInt64UsesSQLRow|TestMySQLNamedLockResultSuccessRequiresOne|TestInsertRejectsConcurrentDuplicateEmailMySQL" -v`
+- `go test ./model -run "Test(UserUpdateDoesNotOverwriteAccountingFields|UserUpdatePersistsZeroValueProfileFields|UserUpdateDoesNotClearEmailFromLoadedPartialUpdate|UpdateUserSettingOnlyUpdatesSetting)$" -count=1`
+- `go test ./model -run "Test(WaitPendingLogQuotaDataDrainsEnqueuedWork|EnqueueLogQuotaDataAfterShutdownPersistsSynchronously|Record.*QuotaDataAsync)$"`
+- `go test ./relay/helper -run "TestStreamScanner|TestNewStreamScanner|Test.*Ping"`
+- `cd web/default && bun run typecheck`
+- `go test ./common`
+- `go test ./middleware`
+- `go test ./service`
+- `go test ./model`
+- `go test ./controller`
+- `go test ./common ./controller ./model ./relay/helper`
+- `go run ./tools/jsonwrapcheck`
+- `git diff --check`
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.4-preview.2...v1.0.4-preview.3
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.3.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.3.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.4-preview.2
+
+<Callout type="note" title="リリース版 · 公開日 2026-07-07 15:37:12 (UTC+8)">
+
+> [!WARNING]
+> # ⚠️ 严重安全与计费风险警示
+>
+> 本次 v1.0.4-preview.2 优先处理 new-api 近期暴露和修复的一组高危问题，并补齐 MAX API 二次开发路径中的本地扩展风险。受影响部署可能出现账号归属异常、邮箱重复或密码重置歧义、极端参数下 quota 溢出或错误扣费、SSRF 防护绕过、客户端断流后继续消耗上游流量，以及异步任务结算记录不一致等问题。生产环境建议优先升级，并在升级后重点验证账号注册/邮箱绑定/找回密码、充值回调、文本/工具/视频计费、受保护下载/代理、流式响应和异步任务退款/结算。
+>
+> ```text
+>        /\
+>       /!!\
+>      /____\
+>   SECURITY / BILLING
+> ```
+>
+> 本预览版重点覆盖：账号、邮箱和密码安全硬化；计费数量溢出和 quota 饱和转换；SSRF protected fetch、重定向和拨号链路校验；流式断连后的 stale write 与 goroutine 清理；异步任务差额结算 quota 持久化；以及 Go 安全依赖升级。若基于当前开发分支自行构建，请先确认前端 typecheck、后端目标测试和 `jsonwrapcheck` 均通过后再发布。
+
+> [!NOTE]
+> 当前 MAX API 分为正式版和 Preview 预览版。Preview 预览版用于提前开放新能力和修复，便于在真实环境中验证兼容性、稳定性和安全性；正式版将在对应 Preview 预览版稳定运行 1 周后正式发布，以保障系统安全性和可靠性。
+
+### Release Notes
+
+### GitHub 地址
+
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.4-preview.2
+
+### Highlights
+
+- 优化 Playground 输入区在窄屏、长提示词和长模型名场景下的布局稳定性，减少底部工具栏、模型选择器和发送按钮挤压或溢出。
+- 增强通用视频任务结果 URL 解析能力，兼容 OpenAI Video 风格的 `metadata.url` 返回结构，避免已完成任务被误回退为本机 `/content` 代理地址。
+- 增加服务优雅关闭，收到 `SIGINT` / `SIGTERM` 后会等待正在处理的请求结束；如果等待超时会强制关闭活跃连接，再继续看板 quota cache 落库和退出清理，降低重启时 SSE 中断、看板数据丢失和清理阶段并发残留风险。
+- 加固用户资料和个人设置更新路径，避免高并发下旧用户快照覆盖 `quota`、`used_quota`、`request_count` 等计费字段。
+- 提升上游兼容性：补齐 Ollama 非流式 `tool_calls` 响应、Wan2.7 i2v `input.media` 请求格式，以及认证守卫 401-only 会话失效处理。
+- 进一步加固视频任务请求解析和计费判定，保留显式 `duration: 0`、修正 `seconds` / `duration`、`size` / `aspect_ratio`、`model` / `model_name` 的优先级，并避免视频输入漏判。
+- 同步 new-api rc.18 账号安全、SSRF、quota 溢出、流式断连和异步任务差额结算等高危修复，补齐 MAX API 自有任务计费和 rate card 扩展路径的防护。
+- 本预览版也包含此前已覆盖的 new-api 风险修复：用户资料/设置更新不再覆盖计费字段、优雅关闭超时会强制关闭活跃连接、认证守卫只在 401 时清理登录态、Ollama/Wan2.7 兼容路径和视频任务零值字段处理继续保持生效。
+- 优化渠道编辑抽屉，高级设置导航可定位到真实配置区；新建渠道切换类型时会清理不属于新类型的 `base_url` / `other` 默认字段，编辑已有渠道时保留已保存配置。
+- 引入多自动链路配置，管理员可在同一分组配置 `auto`、`auto:fast`、`auto:cheap` 等多条具名自动链路，并为每条链路独立设置展示名称、启用状态、用户可选状态和真实分组顺序。
+- 加固自动链路权限边界：用户只能在新建/更新令牌时选择可见且可用的自动链路，默认自动链路必须保持启用，已签发的隐藏链路令牌仍按运行时兼容策略继续解析。
+- 继续加固账号邮箱安全边界：MySQL 注册/绑定路径改用可索引标准化邮箱和连接级命名锁，Creem 充值回调也不再绕过邮箱标准化、唯一性检查和事务保护。
+- 强化流式、任务 header 和使用日志统计路径：SSE ping 写入恢复超时保护，任务请求 `{api_key}` 占位符在直接调用路径也能初始化渠道密钥，重试用量统计不会再混入充值或系统日志 quota。
+- 补齐本轮 review follow-up：任务时长解析、图片 `n` 校验、流式 helper 空上下文保护、quota filter 路由枚举和分组倍率查询统一走共享/归一化路径，减少前后端校验漂移。
+
+### New Features
+
+- 通用视频任务默认结果 URL 路径新增 `metadata.url`、`metadata.video_url`、`metadata.output_url` 以及 `data.metadata.*` 兼容路径。
+- Playground 输入组件补充更严格的宽度约束和自动换行能力，长文本、长模型名或长分组名不会再撑开输入面板。
+- 阿里万相任务新增 `wan2.7-i2v`、`wan2.7-t2v` 模型入口；`wan2.7-i2v` 会自动将 `image`、`images`、`input_reference` 或显式 `input.media` 映射为新协议 `input.media`。
+- Ollama 非流式响应现在会把上游 `tool_calls` 转换为 OpenAI 兼容的 `message.tool_calls`，并返回 `finish_reason: "tool_calls"`。
+- 服务关闭超时时间可通过 `SHUTDOWN_TIMEOUT_SECONDS` 配置，默认 120 秒。
+- 看板 quota cache 退出前保存等待时间可通过 `QUOTA_DATA_CACHE_SAVE_TIMEOUT_SECONDS` 配置，默认 30 秒，避免缓存落库无限阻塞进程退出。
+- 渠道编辑高级设置增加左侧子区域定位体验，可快速跳转到路由策略、覆盖规则、视频任务协议、响应映射、字段透传、额外设置和上游模型检测等配置区域。
+- 分组倍率设置新增 `AutoGroupRoutes` 自动链路配置，支持 `default_route`、`routes[].enabled`、`routes[].user_selectable` 和每条链路的真实分组顺序。
+- 用户分组、令牌、定价详情和性能统计接口支持返回和识别多条自动链路；定价详情页会展示每条可用自动链路实际命中的分组链。
+- 使用日志新增 quota 筛选维度，支持按全部、异常、零扣费和负扣费过滤普通日志与任务日志，并同步到 URL 查询参数和后端统计接口。
+
+### Improvements
+
+- Prompt 输入框和通用输入组增加 `min-width: 0`、最大宽度约束和长词换行策略，提升复杂文本输入时的响应式表现。
+- Playground 底部工具区支持换行，附件、联网搜索、清空历史、模型/分组选择和发送/停止按钮在较窄宽度下会更稳定排列。
+- 模型和分组选择按钮增加桌面端最大宽度限制，保留移动端图标式入口，同时避免长名称影响右侧操作按钮。
+- 通用视频任务完成结果优先读取上游或代理返回的实际媒体 URL；只有确实没有直接结果 URL 时，才继续使用 `/v1/videos/{task_id}/content` 兜底地址。
+- 看板 quota logging 改为同步写入内存聚合缓存，配合退出前 flush，减少进程关闭前日志聚合丢失的窗口。
+- 用户设置更新新增独立的 `UpdateUserSetting` 路径，只更新 `setting` 字段和对应缓存；资料更新后的 Redis 用户缓存只刷新非 quota 字段，并同步刷新 `Role`，避免权限缓存滞后。
+- 通知偏好保存现在以现有 `setting` 为基底，只覆盖通知相关字段，保留语言、侧边栏模块和扣费偏好等其它用户设置。
+- 认证路由守卫仅在 `getSelf` 返回 401 时清理本地登录态；网络错误、超时或 5xx 不再直接踢出登录，也不会继续用本地旧登录态静默放行。
+- 通用视频任务默认结果 URL 路径生成逻辑收敛为共享 leaf/prefix 组合，降低后续维护时漏加路径的风险，同时保持当前默认路径顺序不变。
+- 用户和 Ollama 相关 JSON 编解码继续迁移到项目统一 `common.*` wrapper，并清理对应 `jsonwrapcheck` allowlist。
+- 任务请求 DTO 的可选 `duration` 改为指针字段，客户端显式传入 `duration: 0` 时不会被 `omitempty` 静默丢弃。
+- 通用任务请求解析统一字段优先级：显式 `model` 优先于 `model_name`、`size` 优先于 `aspect_ratio`、`seconds` 优先于 `duration`，嵌套 `parameters.duration` 会同步补齐秒数字段以保持行为一致。
+- 用户资料和设置更新后的 Redis 写入改为 best-effort；数据库更新成功后，临时缓存写入失败只记录系统日志，不再让调用方误以为 DB 更新失败。
+- 管理员覆盖用户 quota 后会主动失效用户缓存；缓存失效失败只记录日志并继续返回成功，避免 Redis 短暂异常影响已提交的 quota 覆盖操作。
+- 主 HTTP 服务启动时会先完成端口绑定，再打印启动成功日志；如果端口被占用，会直接报告绑定失败，减少运维日志误判。
+- 主 HTTP 服务优雅关闭超时后会调用强制关闭，确保活跃连接先结束，再进入 quota cache 保存和后续资源清理。
+- Playground 在模型或分组不可发送时，重新生成和编辑后提交会给出明确提示，而不是静默无响应。
+- Wan2.7 i2v 的 `input.media` 归一化会按媒体类型补齐缺失的首帧、尾帧和驱动音频；即使请求已显式携带部分 `media`，也不会丢弃同时提供的 `last_frame_url` 或 `audio_url`。
+- 新建渠道时切换类型会按新类型重置 `base_url` / `other` 的类型专属默认值，避免 Vertex、Coze、讯飞、火山等类型之间切换时残留旧字段。
+- 高级设置滚动监听不再被动展开折叠面板，也不会把滚动触发的状态写入本地偏好；只有用户点击导航、校验错误或手动开关时才改变展开状态。
+- `Channel Extra Settings` 子导航的已配置状态和滚动锚点现在覆盖代理地址、系统提示词和系统提示词拼接模式等真实额外设置字段，避免只配置这些字段时导航提示和定位不一致。
+- `AutoGroups` 继续作为默认自动链路的兼容字段保留；保存 `AutoGroupRoutes` 时会自动派生默认链路分组，旧数组格式也会自动归一化为 `auto` 默认链路。
+- 运行时路由、模型列表、渠道选择、跨分组重试和性能统计统一识别 `auto:<name>` 形式的自动链路键，不再只特殊处理硬编码 `auto`。
+- 令牌创建表单在启用默认自动分组时会使用当前配置的默认自动链路，而不是固定使用 `auto`。
+- 自动链路编辑器新增重复 key、无效 key、空分组和禁用默认链路的即时提示，避免保存按钮无反馈或产生不可用配置。
+- 自动链路相关前端文案已补齐到 zh/en/fr/ja/ru/vi；新增法语文案同步补齐重音和撇号。
+- option 批量保存会在写入数据库前预校验会影响运行时状态的配置项，包括 `AutoGroups`、`AutoGroupRoutes`、`ModelRatio`、`PayMethods`、状态码规则和任务计费 rate cards，避免提交后才发现运行时刷新失败。
+- 账号安全路径会统一裁剪用户名、标准化邮箱大小写，并在注册、OAuth 创建、邮箱绑定和密码重置入口做唯一性/歧义检查，降低历史重复邮箱或大小写邮箱造成的账号归属风险。
+- 计费 quota 计算新增饱和转换，覆盖文本计费、工具调用计费、图片数量、音频估算、视频任务 `seconds`/`duration`、Kling 任务结果、通用 rate card 和 tiered billing 取整路径，避免极端输入下出现 int 溢出、负 quota 或错误扣费。
+- SSRF 保护扩展到受保护 fetch 客户端的重定向和拨号阶段；启用域名 IP 过滤时，会校验 DNS 解析结果并直连已验证 IP，避免重定向或 DNS rebinding 绕过 URL 级校验。
+- 流式响应写入增加 write deadline，客户端断开后会优先关闭 upstream body 并停止 ping/data/scanner goroutine，减少 stale write、长时间阻塞和上游流量继续消耗。
+- 异步任务差额结算后会把实际 `quota` 回写任务记录，避免退款、列表展示或重复结算继续读取旧预扣 quota。
+- Go 安全依赖升级到 upstream rc.18 对应版本并额外补齐 `x/crypto` 安全更新：`golang.org/x/crypto v0.52.0`、`golang.org/x/image v0.41.0`、`golang.org/x/net v0.55.0`，并同步更新相关 `x/sys`、`x/text` 依赖。
+- 邮箱查询改为使用 `normalized_email` 索引列，避免 MySQL 上 `LOWER(email)` 谓词导致全表扫描和过大锁范围；写入路径会自动维护标准化邮箱。
+- MySQL 邮箱写入使用同一底层连接持有 `GET_LOCK`，直到事务提交或回滚后才释放，覆盖普通注册、OAuth 注册、邮箱绑定和 Creem 充值邮箱回填。
+- Creem 充值回调在用户邮箱为空时只会写入标准化且未被占用的邮箱；如果支付邮箱已被其它账号使用，充值仍可成功，但不会绑定该邮箱。
+- 密码重置相关日志会记录脱敏邮箱，避免把完整邮箱地址写入错误或告警日志。
+- tiered text quota 的错误 fallback 会对“预扣 quota + 工具调用附加费”的最终和做饱和转换，保持极端值下的 quota 上限策略一致。
+- 分组倍率配置保存时会先裁剪普通分组 key 的首尾空白，再持久化和校验，避免配置项保存后无法通过正常分组名命中。
+- 模型分组选择器会把字符串倍率转换为数值后判断是否展示，`"0.0"`、`"0.00"` 等零值格式不会再显示误导性的倍率标签。
+- 任务请求时长读取收敛到 `TaskSubmitReq.ResolvedSeconds` / `ResolvedSecondsOrDefault`，验证、Sora 默认值和阿里请求转换共享同一套解析、错误处理和默认时长逻辑。
+- 图片 `n` 数量上限校验收敛到共享 `dto.ValidateImageN`，OpenAI 图片请求和阿里 `parameters.n` 使用同一上限与错误文案模板。
+- 使用日志 quota filter 的路由枚举现在从 UI filter values 派生，避免 `isQuotaFilterValue` 和 `z.enum(QUOTA_FILTER_SEARCH_VALUES)` 后续手动维护时漂移。
+
+### Bug Fixes
+
+- 修复 Playground 输入区在长模型名、长分组名或较窄容器中可能出现控件互相挤压、按钮被顶出或文本溢出的问题。
+- 修复长提示词在输入框中可能撑开父容器、影响输入区整体布局的问题。
+- 修复通用视频任务上游已在 `metadata.url` 返回视频地址时，MAX API 未能保存该结果 URL，导致查询结果只返回本机 `/content` 代理地址的问题。
+- 修复部分 Seedance 兼容代理完成态采用 OpenAI Video `metadata.url` 结构时，任务结果 URL 解析不到的问题。
+- 修复用户个人设置、语言、侧边栏配置和订阅偏好更新时，可能用旧用户对象覆盖最新 quota/used quota/request count 的并发风险。
+- 修复邮箱未标准化导致 `User@Example.com` 和 `user@example.com` 可被不同账号重复占用，进而影响注册、OAuth 创建、邮箱绑定和密码重置归属的问题。
+- 修复密码重置在历史重复邮箱场景下可能更新多个账号的问题；现在仅允许单一匹配账号重置，重复或缺失邮箱统一视为无效重置链接。
+- 修复无密码账号可能通过密码登录或首次改密绕过原密码校验的问题；空密码账号不能用于密码登录，改密时也不会把空原密码当作有效密码。
+- 修复保存通知偏好时会用新建 `setting` 覆盖整份设置，导致语言、侧边栏模块、扣费偏好等无关设置被清空的问题。
+- 修复用户资料更新后 Redis 用户缓存未同步刷新 `Role`，可能让旧角色权限继续生效到缓存失效的问题。
+- 修复 Ollama 非流式工具调用响应未返回 OpenAI 兼容 `tool_calls` 的问题，并保留工具参数中的显式零值。
+- 修复 Wan2.7 i2v 请求仍按旧版 `img_url` 发送图片的问题；Wan2.7 i2v 现在使用 `input.media`，Wan2.5 等旧模型仍保留原有 `img_url` 行为。
+- 修复 Wan2.7 i2v 已显式提供部分 `input.media` 时，同时提供的 `last_frame_url`、`audio_url` 会被清空而没有合并进 `media` 的问题。
+- 修复 JSON 任务请求只传 `image` 而未传 `images` 时，通用 task action 和后续适配器可能无法识别为图生视频的问题。
+- 修复认证页在 `getSelf` 网络错误或服务端 5xx 时误判 session 失效、清空本地登录态的问题；非 401 校验错误现在会交给路由错误边界处理，避免旧登录态静默通过。
+- 修复 `TaskSubmitReq.Duration` 使用非指针 `omitempty` 导致显式 `duration: 0` 无法继续透传给上游的问题。
+- 修复通用任务请求解析中 `model_name` 覆盖 `model`、`aspect_ratio` 覆盖 `size`、`duration` 覆盖 `seconds` 的优先级不一致问题。
+- 修复嵌套 `parameters.generateAudio` 被错误写入 `WithAudio`，导致下游生成音频开关含义错位的问题。
+- 修复内容数组中第一个 `video_url` 条目为空时，后续有效视频输入不会继续扫描，可能影响 `has_video_input` 计费判定的问题。
+- 修复 Wan2.7 i2v 同时传 `input_reference` 和 `images` 时，第二帧/尾帧图片可能被跳过或错位的问题。
+- 修复基础任务请求从单图 `image` 回填 `images` 时未裁剪空白，导致不同入口对空白 URL 处理不一致的问题。
+- 修复 `input_reference` 只有空白字符时仍会生成 `images: [""]` 并被误判为图生视频输入的问题；空白 `input_reference` 现在会被视为未提供，并可回退到 `image`。
+- 修复工具调用参数为字面量 `null` 时，Claude / Gemini 转换路径可能把参数序列化为 `null` 而不是空对象 `{}` 的问题。
+- 修复管理员覆盖用户 quota 后 Redis 失效失败会把已成功提交的 DB 更新返回成失败的问题。
+- 修复极端 `n`、`max_tokens`、视频时长、rate card quantity 或表达式结果可能导致 quota 计算溢出、转负数或错误扣费的问题。
+- 修复任务差额结算只更新内存对象、没有把实际 `quota` 持久化到数据库的问题。
+- 修复阿里视频任务 `seconds <= 0` 时未稳定回退默认时长，可能影响请求体和计费倍率一致性的问题。
+- 修复任务请求 `seconds` 为非数字字符串时会被静默当作 0 通过校验的问题；非法 `seconds` 现在返回 `invalid_seconds`，边界提示也与实际允许的 `0..3600` 范围一致。
+- 修复受保护 fetch 的重定向目标、域名解析结果或拨号地址未在同一保护链路内校验，可能留下 SSRF 绕过窗口的问题。
+- 修复流式客户端断开后仍可能继续向已失效连接写入、等待 goroutine 退出时未先关闭 upstream body，导致上游流量继续消耗或退出清理变慢的问题。
+- 修复 Claude / Responses 流式 helper 在收到 nil `gin.Context` 或缺失 writer 时仍继续 `Render`，可能触发 panic 的问题。
+- 修复主服务端口绑定失败时仍可能先打印启动成功日志的问题。
+- 修复优雅关闭超时后活跃请求仍可能继续运行，而进程已经开始 quota cache 保存和 DB 清理的问题。
+- 修复渠道编辑抽屉点击 “Channel Extra Settings” 时滚动到视频任务协议等更早区域的问题；只配置代理地址或系统提示词时，也会定位到实际配置字段。
+- 修复滚动到高级设置区域时可能被动展开 Advanced Settings，并意外覆盖用户折叠偏好的问题。
+- 修复新建渠道时切换渠道类型不会清理旧类型 `base_url` / `other` 字段，可能把旧类型配置误提交到新类型的问题。
+- 修复编辑已有渠道时切换类型会静默清空已保存 `base_url` / `other` 的问题；自动重置仅用于新建渠道。
+- 修复 Playground 重新生成或编辑后重新提交时，模型/分组无效会静默失败、没有用户反馈的问题。
+- 修复新增自动链路时使用已有 key 会静默覆盖原链路配置的问题；新增模式会拒绝重复 key，编辑模式才允许替换当前链路。
+- 修复默认自动链路可被禁用，导致启用 `DefaultUseAutoGroup` 后新注册用户默认令牌指向不可用链路的问题。
+- 修复 `user_selectable=false` 的隐藏自动链路仍可被普通用户通过令牌创建/更新接口手动指定的问题。
+- 修复关闭阶段 `runWithTimeout` 内部任务 panic 时可能直接终止进程，绕过后续清理流程的问题；panic 现在会记录日志并结束等待流程。
+- 修复批量更新 option 时部分格式错误的配置可能先提交到数据库、再在内存运行时刷新阶段失败，导致持久化配置与运行时状态不一致的问题。
+- 修复 MySQL 下两个并发请求注册同一全新邮箱时，`SELECT ... FOR UPDATE` 无法锁住不存在行，可能落到底层唯一索引错误而不是返回友好邮箱占用错误的问题。
+- 修复 Creem 充值 webhook 直接写入 customer email，可能绕过邮箱标准化、唯一性检查和事务保护的问题。
+- 修复密码重置邮件发送失败或跳过时日志输出原始邮箱地址的 PII 风险。
+- 修复 SSE ping 写入直接持锁调用 `PingData`，当底层 writer 不支持 deadline 且写入阻塞时，pinger 退出等待可能被永久挂住的问题。
+- 修复直接调用任务请求发送路径且 `ChannelMeta` 为空时，runtime header override 中的 `{api_key}` 可能被替换为空字符串的问题。
+- 修复使用日志重试筛选统计在 `logType=Unknown` 时丢失 `LogTypeConsume` 限制，可能把充值或系统日志 quota 计入用量统计的问题。
+- 修复使用日志 quota filter 的 readonly tuple 类型断言导致 `bun run typecheck` 报 TS2352、阻塞前端构建的问题。
+- 修复使用日志 quota filter 的 UI 值列表和路由搜索参数枚举重复维护，后续新增筛选值时可能导致 URL round-trip 与筛选栏校验不一致的问题。
+- 修复空白包裹的普通分组倍率 key 会被原样保存或查询时不裁剪，导致 `GetGroupRatio` / `ContainsGroupRatio` 按正常分组名或带空白入参查询不到并静默回退默认倍率的问题。
+- 修复后端或 API 返回 `"0.0"`、`"0.00"` 等字符串零倍率时，模型分组选择器仍显示 `Ratio: 0.00` 的问题。
+- 修复 tiered text quota fallback 只饱和工具附加费、没有饱和最终 quota 和的问题。
+
+### Compatibility Notes
+
+- 已配置 `generic_video_task` 的视频渠道，如果上游或中间代理在完成态返回 `metadata.url`，现在无需额外配置结果路径即可被默认解析。
+- 如果渠道自定义了 `task_protocol_config.result_url_paths`，自定义列表会覆盖默认路径；需要兼容 `metadata.url` 的自定义渠道应将该路径显式加入配置。
+- `/v1/videos/{task_id}/content` 兜底行为仍然保留，用于没有直接结果 URL 或需要本机内容代理的任务。
+- Playground 选择器在移动端仍保持紧凑图标入口；桌面端长名称会截断显示，不影响实际选择值。
+- 如果请求处理超过 `SHUTDOWN_TIMEOUT_SECONDS`，主 HTTP 服务会强制关闭活跃连接；长连接、SSE 或慢请求应按连接关闭语义处理重连或重试。
+- 启用数据看板导出时，进程优雅关闭会尝试保存内存中的 quota data cache；保存等待受 `QUOTA_DATA_CACHE_SAVE_TIMEOUT_SECONDS` 限制，异常强杀仍可能绕过该流程。
+- quota data logging 改为同步聚合，会优先保证退出前数据一致性；高吞吐环境建议结合实际日志吞吐观察延迟。
+- `wan2.7-i2v` 使用 `input.media` 新协议；显式 `metadata.input.media` 会被保留，缺失的 `last_frame` / `driving_audio` 会从旧字段补齐，旧 Wan i2v 模型继续使用原有 `img_url`。
+- 空白 `input_reference` 现在按未提供处理；如果同一请求还提供了 `image`，会继续走单图 fallback。
+- 保存通知偏好会清空旧通知渠道的地址和密钥字段，避免切换通知类型后残留旧配置；语言、侧边栏模块和扣费偏好会保留。
+- Ollama 工具调用客户端可能开始收到 `finish_reason: "tool_calls"` 和 `message.tool_calls`，这是对 OpenAI 响应格式的兼容修复。
+- 认证守卫现在只把 HTTP 401 视为 session 失效；临时网络或服务端错误不会清空本地登录态，但会继续抛给路由错误边界，便于用户和运维看到真实故障。
+- 对依赖任务请求原始字段的自定义渠道，`model`、`size`、`seconds` 的显式值现在会优先保留；如果历史配置依赖 `model_name`、`aspect_ratio` 或 `duration` 覆盖同级字段，需要按新优先级检查配置。
+- `duration` 作为可选字段会保留显式 0；自定义适配器读取时应使用 `DurationValue()` 或判空指针，避免重新引入零值丢失问题。
+- 任务请求中的 `seconds` 如果是非数字字符串，现在会被拒绝而不是按 0 处理；`duration: 0` 和 `seconds <= 0` 的默认时长 fallback 语义仍保留在需要默认值的适配器路径中。
+- 邮箱会按裁剪空白并转小写后的标准值参与唯一性判断；如果历史数据库中存在大小写不同但标准化后相同的重复邮箱，注册、邮箱绑定和密码重置会更早失败，需要先清理重复账号数据。
+- 密码重置现在要求邮箱只匹配一个有效账号；历史重复邮箱不会再被批量重置，用户会收到无效链接结果以避免账号归属泄露。
+- 计费数量、视频时长和 rate card quantity 会被校验或限制；超过边界的请求可能被拒绝或按安全上限处理，避免继续产生溢出后的异常 quota。
+- SSRF 防护启用时，受保护下载、视频代理、MJ 代理和通知/webhook 等 fetch 路径会校验重定向和解析后的目标 IP；如果部署依赖私网地址或代理解析私网域名，需要显式配置允许私网 IP、IP 白名单或关闭对应域名 IP 过滤。
+- 流式客户端断开后会更快关闭上游响应体；依赖“客户端已断开但上游仍继续跑完”的外部观察逻辑需要按连接关闭语义调整。
+- 异步任务完成后的差额结算会更新任务表中的 `quota`；后续任务列表、退款和重复结算判断会看到实际扣费值，而不是历史预扣值。
+- Go 依赖升级后建议重新构建镜像/二进制并刷新模块缓存；安全补丁不改变公开 API，但可能改变底层 TLS、HTTP/2、图片解析和加密库行为。
+- 渠道编辑器在新建渠道时切换类型会清理不属于新类型的 `base_url` / `other` 类型专属字段；编辑已有渠道时不会自动覆盖已保存的字段。
+- Advanced Settings 的展开偏好只在用户手动开关折叠面板时持久化；导航点击和校验失败触发的自动展开只影响当前编辑流程。
+- 自动链路配置不需要新增数据库表；新配置写入现有 option 体系中的 `AutoGroupRoutes`，旧 `AutoGroups` 数组仍作为默认链路兼容字段保留。
+- 旧版 `AutoGroups` 数组会被解释为 `auto` 默认链路；管理员保存新配置后，`AutoGroups` 会同步为当前 `default_route` 对应的真实分组列表。
+- 自动链路 key 仅支持 `auto` 或 `auto:<name>`，其中自定义部分允许字母、数字、点、下划线和短横线；链路中的 `groups` 必须是真实计费分组，不能再嵌套其它自动链路 key。
+- `default_route` 必须指向存在且启用的自动链路；否则系统设置保存会被拒绝，避免默认令牌生成不可用。
+- `user_selectable=false` 的链路不会出现在普通用户可选分组中，令牌新建/更新也不能主动选择；已存在的隐藏链路令牌仍会按运行时可用性解析，用于兼容历史配置或管理员预置令牌。
+- 启用 `DefaultUseAutoGroup` 时，新注册用户默认令牌会使用当前 `default_route`，不再假设默认 key 一定是 `auto`。
+- 管理员批量保存设置时，格式错误或语义无效的运行时配置会在数据库提交前被拒绝；这会更早暴露无效 JSON、无效自动链路、非法状态码范围或无效任务计费 rate cards，但不会改变合法配置的保存格式。
+- MySQL 部署会使用连接级邮箱命名锁串行化同一标准化邮箱的注册和绑定；锁等待超时会返回失败，建议在高并发注册场景下观察数据库连接池和锁等待指标。
+- Creem 回调不再保证把支付邮箱写入空邮箱账号；当支付邮箱已被其它账号占用时，仅完成充值，不做邮箱绑定，避免破坏后续密码找回唯一性假设。
+- 历史分组倍率配置中如果存在 `" vip "` 这类带首尾空白的 key，重新保存后会归一化为 `"vip"`；依赖空白 key 的异常配置需要改为正常分组名。
+- 调用分组倍率查询时传入首尾空白也会按裁剪后的分组名查询；这会让 `" vip "` 和 `"vip"` 走同一倍率配置。
+- 使用日志 quota filter 只在传入 `quota_filter` 时生效；默认 `all` 不会发送该参数，保持旧查询结果不变。
+
+### Verification
+
+- `bunx eslint src\components\ai-elements\prompt-input.tsx src\components\model-group-selector.tsx src\components\ui\input-group.tsx src\features\playground\components\playground-input.tsx --no-warn-ignored`
+- `bunx eslint src/features/channels/components/drawers/channel-mutate-drawer.tsx`
+- `bunx eslint src/routes/_authenticated/route.tsx`
+- `bun test tests/channel-form.test.ts`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel -count=1`
+- `go test . ./controller ./model ./relay/channel/ollama ./relay/channel/task/ali ./relay/common`
+- `go test . -run "TestRunWithTimeout|TestShutdownHTTPServerClosesActiveHandlersAfterTimeout" -count=5`
+- `go test ./controller -run TestUpdateUserSettingPreservesUnrelatedSettings -count=1`
+- `go test ./model -run "TestUserUpdateIgnoresCacheWriteFailure|TestUpdateUserSettingOnlyUpdatesSetting|TestUpdateUserSettingIgnoresCacheWriteFailure|TestUpdateUserSettingMissingUserReturnsError" -count=1`
+- `go test ./relay/channel/task/ali -run TestConvertToAliRequestWan27I2VMergesLegacyMediaFieldsIntoPartialMedia -count=1`
+- `go test ./relay/common -run TestValidateMultipartDirectIgnoresBlankInputReference -count=1`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/ali ./relay/common ./service ./model ./controller`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/doubao`
+- `go test . ./setting ./service ./controller -run "TestRunWithTimeoutRecoversPanic|TestParseAutoGroupRoutes|TestHiddenAutoRouteRuntimeUsableButNotUserSelectable|TestAddTokenRejectsNonSelectableAutoRoute|TestUpdateTokenRejectsNonSelectableAutoRoute" -count=1`
+- `go test ./model ./setting`
+- `go test ./setting/...`
+- `go test ./common ./pkg/billingexpr ./relay/common ./relay/helper ./service ./setting/task_billing_setting ./model ./controller ./relay/channel/openai ./relay/channel/gemini ./relay/channel/ali ./relay/channel/task/ali ./relay/channel/task/gemini ./relay/channel/task/kling`
+- `go test ./model ./service`
+- `go test ./model ./service ./setting/ratio_setting ./relay/channel ./controller`
+- `go test ./model -run "Test(UpdateUserSettingOnlyUpdatesSettingMySQL|InsertRejectsConcurrentDuplicateEmailMySQL)$" -count=1 -v`（未设置 `TEST_MYSQL_DSN` 时会跳过 MySQL 外部库覆盖）
+- `go test ./dto ./relay/helper ./relay/channel/ali`
+- `go test ./relay/common ./relay/channel/task/ali`
+- `go test ./relay/helper`
+- `go test ./setting/ratio_setting`
+- `go test ./...`
+- `go vet ./...`
+- `bun test src/features/usage-logs/lib/utils.test.ts`
+- `bun test src/lib/auto-routes.test.ts`
+- `go run ./tools/jsonwrapcheck`
+- `bun run typecheck`
+- `git diff --check`
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.4-preview.1...v1.0.4-preview.2
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/checksums-linux.txt">checksums-linux.txt</a> (188 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/checksums-macos.txt">checksums-macos.txt</a> (97 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/checksums-windows.txt">checksums-windows.txt</a> (95 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/max-api-arm64-v1.0.4-preview.2">max-api-arm64-v1.0.4-preview.2</a> (69.3 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/max-api-macos-v1.0.4-preview.2">max-api-macos-v1.0.4-preview.2</a> (88.7 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/max-api-v1.0.4-preview.2">max-api-v1.0.4-preview.2</a> (71.9 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.2/max-api-v1.0.4-preview.2.exe">max-api-v1.0.4-preview.2.exe</a> (73.6 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.2.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.2.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.4-preview.1
+
+<Callout type="note" title="リリース版 · 公開日 2026-07-04 01:52:07 (UTC+8)">
+
+> [!NOTE]
+> 当前 MAX API 分为正式版和 Preview 预览版。Preview 预览版用于提前开放新能力和修复，便于在真实环境中验证兼容性、稳定性和安全性；正式版将在对应 Preview 预览版稳定运行 1 周后正式发布，以保障系统安全性和可靠性。
+
+### Release Notes
+
+### GitHub 地址
+
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.4-preview.1
+
+### Highlights
+
+- 完善豆包 Seedance 2.0 视频任务支持，新增官方 `safety_identifier`、`priority` 参数透传，并保留对 Seedance 响应形态的结果解析兼容。
+- 补齐豆包视频任务对火山 Seedance 官方请求体的支持，`content[]` 和 `ratio`、`generate_audio`、`duration`、`seed` 等顶层参数可继续透传到 DoubaoVideo 上游封装。
+- 收紧 DoubaoVideo 官方可选字符串处理，`ratio`、`callback_url`、`service_tier`、`safety_identifier` 可区分未传和显式空字符串，带空白的 `ratio` 会在转发前规范化。
+- 修正豆包 Seedance 2.0 动态计费：按输出分辨率和是否包含视频输入计算倍率，避免 1080p、4k 或视频输入请求被错误按基础档计费。
+- 新增通用任务参数化计费兜底能力，任意视频模型只要配置任务 rate card，就可以按最终请求体中的时长、分辨率、音频、媒体输入等字段计费，不再局限于 Kling / Seedance 专属适配。
+- 通用视频任务协议聚焦路径、状态和结果解析配置；请求体透传复用渠道级 `Pass Through Body`，字段改写和默认值复用现有 `Param Override`。
+- 任务提交链路会在计费前应用最终 `Param Override` 请求体，避免视频时长、分辨率、尺寸或输入媒体被改写后仍按旧请求预扣费。
+- 修复通用视频任务计费边界场景：multipart 请求经 `Param Override` 改写后会按最终上游 JSON 计费，顶层 `image` / `images` 也不会被同步后的请求上下文重复计数。
+- 任务 `Param Override` 的 header 联动现在会真正发送到上游；`return_error` 和无效改写会按本地配置错误处理，不再误触发渠道处罚。
+- 清理历史协议配置，前端保存会移除旧协议值和已废弃的视频任务请求体配置。
+- 修复异步视频任务可能卡在 `in_progress + 100%` 的问题，非终态任务不会再因为进度为 `100%` 而退出后台轮询。
+- 修复多节点异步任务结算日志归属：任务完成轮询可以发生在任意节点，但消费日志和用量数据会归属到任务发起节点。
+- 增强用量看板数据维度，支持按分组、令牌、渠道和节点记录消费聚合，降低多节点部署下排查账单归属的难度。
+- 增强 OpenAI Responses 兼容层，新增 Responses ↔ Chat Completions 双向转换能力，便于把 `/v1/responses` 请求接入 Chat 形态上游。
+- 新增 Gemini `/v1/responses` 兼容路径，支持将 Responses 请求转换为 Gemini generateContent，并将 Gemini 非流式 / 流式结果回转为 Responses 响应。
+- Advanced Custom 新增 `openai_responses_to_openai_chat_completions` 转换器，可为自定义通道配置 Responses 入站、Chat Completions 上游的转发链路。
+- 修复 Claude / Gemini 工具调用响应兼容性问题，assistant 文本和工具调用同时存在时不会再丢失文本内容。
+- 加强 Claude 工具调用参数校验，空参数继续按 `{}` 兼容，无效 JSON 参数会明确报错，避免向上游发送被静默改写的空输入。
+- 强化前端 Markdown / HTML 富文本渲染安全，公告、首页、关于页、法律文档等可配置内容统一经过安全渲染链路处理。
+- 优化通知中心状态管理，提升已读状态、通知弹窗去重和本地缓存恢复的稳定性。
+- Playground 改善模型 / 分组等选择器在数据刷新、异常和空选项下的状态恢复。
+- Playground 输入区补充长文本布局保护，连续超长提示词不会再横向撑开输入框或把配置、发送按钮挤出屏幕。
+- 用量日志新增更细的重试筛选语义，可区分普通错误重试和空输出重试，方便定位重试来源。
+- 修复历史时间窗口下用量统计 RPM / TPM 显示为 0 的问题，实时速率指标继续按最近 60 秒计算。
+
+### New Features
+
+- 豆包视频任务新增火山 Seedance 官方请求体支持：
+  - 可直接接收官方 `content[]` 请求，不再要求同时提供顶层 `prompt`。
+  - `callback_url`、`return_last_frame`、`service_tier`、`execution_expires_after`、`generate_audio`、`draft`、`tools` 可透传到上游封装。
+  - `ratio`、`resolution`、`duration`、`frames`、`seed`、`camera_fixed`、`watermark` 等生成控制参数会合并进最终上游 payload。
+  - `generate_audio: false`、`return_last_frame: false`、`priority: 0`、`seed: 0` 等显式零值会被保留。
+  - `ratio`、`callback_url`、`service_tier`、`safety_identifier` 等可选字符串会保留“未传”和“显式空字符串”的差异。
+- 豆包 Seedance 2.0 任务请求新增参数支持：
+  - `safety_identifier` 可透传到上游。
+  - `priority` 可透传到上游。
+  - `priority: 0` 会被保留并发送，不会因为零值被 `omitempty` 丢弃。
+- Seedance 2.0 计费支持官方分辨率档位：
+  - `480p` / `720p` 作为基础档。
+  - `1080p` 使用独立倍率。
+  - `4k` 使用独立倍率。
+  - 是否包含视频输入会参与同一套价格表计算。
+- 任务参数化计费支持通用 rate card 兜底：
+  - 适配器专属计费仍优先执行，Kling / Ali 等已有专属实现保持原有优先级。
+  - 适配器未返回参数化计费结果时，会按模型名或上游模型名匹配 `task_billing_setting.rate_cards`。
+  - 可按 `duration`、`resolution`、`ratio`、`quality` / `mode`、`has_audio`、`has_video_input`、`image_count`、`video_count` 等通用字段匹配价格行。
+  - 未配置 rate card 的模型继续回退到原有模型价格和 `OtherRatios` 计费逻辑。
+- 通用视频任务协议支持渠道级请求体透传：开启渠道 `Pass Through Body` 后，JSON 请求会保留客户端字段，并继续应用模型映射。
+- 通用视频任务协议提交请求统一经过 `Param Override`，可复用现有参数覆盖能力完成字段改写、默认值注入和上游适配。
+- 任务请求头现在复用普通 relay 的 header override 处理，`set_header`、`delete_header`、`copy_header`、`move_header` 和 `pass_headers` 可用于异步任务上游请求。
+- 异步任务私有数据新增任务发起节点记录，提交任务时保存当前 `NODE_NAME`，轮询结算时复用该节点名写入消费数据。
+- `quota_data` 用量聚合新增分组、令牌、渠道和节点维度，便于后续按更细粒度做数据导出、审计和多节点归因。
+- 新增 Responses → Chat Completions 请求转换能力：
+  - 支持 `instructions`、字符串 / 数组 `input`、多模态 content parts、function call、function call output、tools、tool_choice 和 `text.format`。
+  - 保留可选参数显式零值，例如 `temperature: 0`、`parallel_tool_calls: false` 和 `max_output_tokens`。
+  - `text.format.json_schema` 会转换为 Chat Completions `response_format.json_schema`，并移除 Responses 外层 `type` 字段。
+- 新增 Chat Completions → Responses 响应转换能力：
+  - 支持普通文本、reasoning summary、function call、usage 和 `length` / `content_filter` 不完整结束状态。
+  - 流式 Chat Completions 可回转为 Responses SSE 事件，包括 `response.created`、文本增量、reasoning summary、function call arguments 和最终完成事件。
+- Gemini 通道新增 Responses 模式处理：
+  - 非流式 `/v1/responses` 返回 OpenAI Responses 结构。
+  - 流式 `/v1/responses` 返回 Responses SSE 事件。
+  - 上游缺少 usage 时会按输出内容估算 usage，并写入最终 `response.completed` 事件。
+- Advanced Custom 新增 `openai_responses_to_openai_chat_completions` 转换器：
+  - 入站路径支持 `/v1/responses`。
+  - 上游可配置到 OpenAI Chat Completions 兼容路径。
+  - 前端高级自定义配置补齐转换器选项、路径提示和校验。
+- Responses → Chat 标准转换会拒绝 `custom_tool_call` 和非 function tool，避免把不符合 Chat Completions 协议的 `type: "custom"` 请求发给标准 Chat 上游。
+- 前端新增安全富文本渲染能力：
+  - 新增 HTML 内容组件和共享 sanitizer。
+  - Markdown 渲染统一走可审计的安全处理。
+  - iframe 类型内容仅允许安全来源和安全嵌入路径。
+- 通知系统新增前端状态工具和存储测试，支持更可靠的通知去重、状态恢复和本地已读记录维护。
+- Playground 新增聊天历史清空入口，用户可以在不刷新页面的情况下快速重置当前对话。
+- 用量日志前端筛选新增重试子类型支持，列表筛选可匹配 `retry_log` 与 `empty_retry` 两类标记。
+
+### Improvements
+
+- 豆包 Seedance 2.0 价格表从旧的固定视频输入折扣升级为按 `(模型, 分辨率, 是否视频输入)` 计算相对倍率。
+- 管理员仍只需把 Seedance 2.0 `ModelRatio` 配置为基础档无视频输入单价，系统会按实际请求自动追加 `OtherRatio`。
+- Seedance 2.0 计费逻辑同时读取通用任务 `metadata` 和官方 protocol 原始请求，避免请求转换链路与计费链路使用不同字段来源。
+- Seedance 2.0 计费逻辑会额外检查客户端原始请求中的顶层 `video_url` / `video`，避免官方媒体请求的视频输入被漏算。
+- DoubaoVideo 请求构建会先合并官方顶层 Seedance 字段，再应用 `metadata`，保留历史 `metadata` 覆盖优先级。
+- 使用通用任务协议并开启渠道请求体透传时，后端只要求 `model` 必填；promptless image-driven 请求不会再被基础任务校验提前拒绝。
+- 通用任务上下文会从客户端原始 JSON 同步 `ratio`、`generate_audio`、`priority`、`seed` 等官方字段，让透传、字段映射和计费读取同一份最终上下文。
+- `generate_audio` 在任务上下文中使用独立字段保存，`with_audio` 只作为兼容回退，减少同一个官方字段被重复映射造成的歧义。
+- DoubaoVideo 转发官方顶层可选字符串时改为按字段是否存在判断，显式空 `callback_url`、`service_tier`、`safety_identifier` 和 `ratio` 不会被误当作未传字段丢弃。
+- 视频输入检测补充兼容 `metadata.video_url`、`metadata.video` 和 `metadata.content[].video_url` 等结构。
+- 视频输入计费检测会校验实际值是否可用，空字符串、`null`、`false` 和空 `video_url.url` 不再触发视频输入倍率。
+- 通用任务 URL 拼接会识别并去除与 `base_url` 重复的 path 前缀，减少 `/v1/v1/...` 这类配置错误。
+- 通用任务请求会先生成最终提交体，再进入计费估算、预扣费和上游发送；Doubao、Gemini / Vertex、Ali 和 Kling 计费路径会优先参考最终提交体中的计费字段。
+- 视频任务最终请求上下文会从最终 JSON 提交体回填 `duration_seconds`、`with_audio`、`generate_audio`、`input`、`parameters`、`images` 和 `reference_images` 等常见字段，保证字段映射后仍能被计费估算读取。
+- 通用参数化计费会优先读取最终上游 JSON 请求体，再回退到标准化任务请求和 `metadata`；渠道字段映射、模型映射和参数覆盖后的计费输入与实际上游请求保持一致。
+- 通用参数化计费不会强制所有任务渠道实现新接口；没有配置 rate card 或没有命中价格行的模型会继续走原有计费路径，降低对既有视频渠道的兼容影响。
+- Ali / Kling 动态任务计费会优先解析最终上游 payload，Gemini / Vertex 会优先读取最终 `parameters.durationSeconds` 与 `parameters.resolution`，降低通用协议字段映射后的计费偏差。
+- 任务路径的 `Param Override` 错误会保留本地错误语义，跳过自动重试和渠道健康处罚；header override 配置错误同样不会被误当作上游失败。
+- 通用任务响应解析在拿到结果 URL 时会优先视为成功，兼容上游状态字段仍停留在 `in_progress` 但结果已生成的任务。
+- 异步任务后台轮询和超时扫描改为按任务状态判断未完成任务，不再因为非终态任务的进度被写成 `100%` 就跳过后续处理。
+- 普通消费日志的数据导出也会记录分组、令牌、渠道和当前节点，和异步任务消费日志保持一致的数据结构。
+- 旧的用户级用量查询继续按用户、模型和小时聚合返回，内部新增维度不会改变现有用户查询的总量语义。
+- Responses 兼容层增强消息回放逻辑，手动 replay `response.output` 时会跳过 `reasoning`、`computer_call`、`web_search_call`、`file_search_call`、`item_reference` 等非 Chat message 形态条目，避免注入空用户消息。
+- Responses → Chat 转换补齐 reasoning、工具调用、工具结果和多模态输入的映射，并对不支持的 stateful 字段提前返回明确错误。
+- Chat → Responses 转换补齐 official `incomplete_details.reason` 字段，避免继续输出非官方字段名。
+- Responses ↔ Chat usage 转换保留更完整的 token detail 信息，包括 cached creation、文本、音频、图片和 reasoning token 细分，减少兼容层造成的用量明细丢失。
+- Responses → Chat 流式转换复用同一套 usage 明细映射逻辑，流式和非流式的 cached creation、text、audio、image、reasoning token 细分保持一致。
+- OpenAI Chat → Responses 流式转换减少每个 SSE chunk 的重复 JSON 解析，仅在检测到错误字段时进入错误响应解析。
+- Responses → Chat 转换会校验 `function_call` / `function_call_output` 的调用 ID，缺少 `call_id` / `id` 时提前返回错误，避免转发空 `tool_call_id` 到上游。
+- Gemini Responses 工具转换对不支持的非 function tool 改为显式报错，不再静默丢弃搜索、代码执行、文件搜索等 managed tool 配置。
+- Gemini Responses 流式处理与 OpenAI Chat → Responses 流式处理保持一致：最终事件包含 usage 兜底估算，并在开启响应审计时写入审计内容。
+- Gemini Responses 转换会过滤 Gemini 不兼容的 custom / freeform Responses 工具和 custom tool call 输入输出，降低转换后被 Gemini 上游拒绝的概率。
+- Chat Completions 响应转换为 Claude / Gemini 格式时，若同一 assistant 消息同时包含文本和 `tool_calls`，文本和工具调用都会保留。
+- Claude Chat → Claude Messages 工具调用转换更稳健：`arguments` 为空时发送 `{}`，`arguments` 不是合法 JSON object 时返回明确错误。
+- Claude 响应格式转换更符合 Anthropic 协议：无法解析为 JSON object 的 tool call `arguments` 会包装到 `input.arguments`，确保 `tool_use.input` 始终是 object。
+- Claude / Gemini 响应转换复用统一的 tool call 参数解析逻辑，并统一使用项目 JSON wrapper，减少不同通道之间的异常参数处理差异。
+- 豆包 legacy task protocol 的计费分辨率现在复用实际上游请求 payload，避免顶层请求字段和 `metadata` 转发字段不一致时出现计费 / 请求分歧。
+- 豆包 legacy task protocol 的可选 `resolution` / `ratio` 改为指针字段，显式空字符串会被保留，未传字段仍会省略，符合上游请求 DTO 的零值语义。
+- 豆包 Seedance 2.0 fast 模型补齐高分辨率视频输入价格组合，1080p / 4k 搭配视频输入时也会应用 fast 模型的视频输入倍率。
+- 用量日志 retry 标记补齐独立索引字段和读前 backfill 机制，旧日志会在首次 retry 筛选查询前完成标记回填，减少升级窗口期筛选不准的问题。
+- 用量统计中的 RPM / TPM 查询继续只统计最近 60 秒，但不再叠加页面选择的历史起止时间，历史窗口下也能显示当前实时速率。
+- 消费日志创建时的 retry 标记同步只保留一次 GORM hook，减少写入日志时重复解析 `Other` JSON 的开销。
+- 富文本渲染失败时采用更保守的失败关闭策略，避免 sanitizer 异常导致未清洗内容直接展示。
+- 登录、注册、关于页、首页和法律文档等页面的 Markdown / HTML 显示逻辑收敛到共享渲染工具，减少不同页面对同一内容的展示差异。
+- 通知弹窗去重改为当前页面生命周期内的内存状态，避免同一批通知在短时间内重复打扰用户。
+- Playground 输入框对连续无空格长文本启用容器内换行，并限制模型 / 分组选择器宽度，避免长内容或长模型名影响底部操作区布局。
+- Playground 底部工具栏允许在窄屏下收缩和换行，发送 / 停止按钮保持固定可见，不会被输入内容或配置控件挤出可视区域。
+
+### Bug Fixes
+
+- 修复 `doubao-seedance-2-0-260128` 顶层 `resolution: "1080p"` 请求被按基础档计费的问题。
+- 修复 1080p 无视频输入请求可能从应有的 `51/46` 倍率被错误计为 `1.0` 的问题。
+- 修复 1080p / 4k 搭配视频输入时仍按旧固定视频折扣计费的问题。
+- 修复 `priority: 0` 这类显式零值可选参数在请求转换时可能无法可靠表达的问题。
+- 修复多节点部署下异步任务由非提交节点轮询完成时，消费日志和用量导出被归属到轮询节点的问题。
+- 修复任务消费日志此前未写入 `quota_data` 导出维度，导致任务结算数据与普通消费日志在用量看板链路中不一致的问题。
+- 修复 `quota_data` 缓存聚合 key 过粗，可能把不同分组、令牌、渠道或节点的同小时同用户同模型数据合并到同一条记录的问题。
+- 修复空 `video_url`、`null` / `false` `video` 或空 `video_url.url` 仅因字段存在就触发 Seedance 2.0 视频输入折扣的问题。
+- 修复官方媒体请求将视频输入放在顶层 `video_url` 时，Seedance 2.0 计费没有应用视频输入价格的问题。
+- 修复 DoubaoVideo 通道丢弃火山 Seedance 官方顶层参数，导致 `ratio` / `generate_audio: false` 未生效、视频可能按默认比例生成并带音频的问题。
+- 修复 DoubaoVideo 官方 `ratio` 带前后空白时可能原样转发的问题，现在会按非空校验后的规范值发送。
+- 修复官方顶层 `callback_url`、`service_tier`、`safety_identifier` 显式传入空字符串时无法和未传字段区分，导致空值覆盖无法表达的问题。
+- 修复 `generate_audio` 同时写入 `WithAudio` 和 `GenerateAudio`，造成官方字段和兼容回退字段语义混在一起的问题。
+- 修复仅使用官方 `content[]` 且无顶层 `prompt` 的 Seedance JSON 请求在 DoubaoVideo 校验阶段可能被拒绝的问题。
+- 修复通用视频任务启用渠道请求体透传时，promptless 图片驱动请求被基础校验错误拒绝的问题。
+- 修复任务 `Param Override` 改写 `duration`、`resolution`、`size`、视频输入等计费字段后，预扣费仍按改写前请求计算的问题。
+- 修复 multipart 视频任务经过 `Param Override` 改写最终上游 JSON 后，计费上下文可能没有同步最终请求体，导致分辨率、时长、音频或模型按改写前请求计费的问题。
+- 修复任务 `Param Override return_error` 或无效规则被包装成 `build_request_failed` 500 上游错误，可能触发自动重试或渠道处罚的问题。
+- 修复任务 `Param Override` 中的 `set_header` / `pass_headers` 等 header 联动只写入运行时状态、没有真正发送到上游的问题。
+- 修复通用任务 `Param Override` 将计费字段写入上游专用 `parameters`、`input` 或媒体数组后，计费上下文没有同步这些最终字段的问题。
+- 修复通用参数化计费在最终请求体包含顶层 `image` / `images` 时，又从同步后的 `TaskSubmitReq` 镜像字段重复累加 `image_count`，可能放大按图片数量匹配或计量的价格行的问题。
+- 修复任务 header override 配置错误从任务请求发送阶段返回时，可能继续被包装为上游请求失败的问题。
+- 修复旧 `request_body_mode`、`request_body_mapping`、`request_body_defaults` 配置在前端保存后仍可能残留，导致后端拒绝或重复提交旧协议值的问题。
+- 修复通用视频任务 submit path 与 `base_url` 同时包含 `/v1` 时可能拼出重复路径的问题。
+- 修复 Seedance 上游已经生成结果，但本地任务仍停留在 `in_progress + 100%` 的问题；解析到结果 URL 时会转为完成。
+- 修复非终态视频任务写入 `progress: 100%` 后从后台轮询和超时扫描中消失，导致任务长期卡住的问题。
+- 修复 Advanced Custom 缺少 Responses → Chat 转换器，导致 `/v1/responses` 难以接入只兼容 Chat Completions 的自定义上游的问题。
+- 修复 Gemini Responses 流式上游缺少 usageMetadata 时，最终 `response.completed` 事件可能没有 usage 的问题。
+- 修复 Gemini Responses 流式调用未写入响应审计内容的问题。
+- 修复 Responses 手动回放 `response.output` 时，`reasoning`、搜索、电脑操作、文件搜索和 item reference 等非消息条目可能变成空 user 消息的问题。
+- 修复 Chat Completions 转 Responses 时不完整结束原因字段与官方 Responses 结构不一致的问题。
+- 修复 Responses → Chat 转换可能把 `custom_tool_call` 转成标准 Chat Completions 不支持的 `type: "custom"` 工具调用并继续转发的问题。
+- 修复 Responses → Chat 转换可能生成空 `tool_call_id`，导致 assistant tool call 和 tool result 无法正确关联的问题。
+- 修复 Responses usage 回转到 Chat usage 时会丢失 cached creation、text、audio、image 等 token detail 字段的问题。
+- 修复 Responses → Chat 流式回转仍使用旧的 inline usage 映射，导致流式请求丢失 cached creation、text 和完整 completion details 的问题。
+- 修复 Gemini Responses 工具过滤静默丢弃非 function 工具，导致调用方难以发现上游能力未被支持的问题。
+- 修复 Claude / Gemini 输出格式在 assistant 消息同时包含文本和 `tool_calls` 时，仅保留工具调用、丢失文本说明的问题。
+- 修复 Claude `tool_use` 在 OpenAI tool call `arguments` 为空时被跳过的问题；无效 JSON 参数现在会返回错误，避免静默发送空 `input`。
+- 修复 Claude 响应转换中 malformed tool call `arguments` fallback 可能把 `tool_use.input` 输出为裸字符串、不符合 Anthropic object 要求的问题。
+- 修复 Gemini malformed tool call `arguments` 缺少对齐测试覆盖的问题，Claude / Gemini fallback 行为现在都有回归测试保护。
+- 修复豆包 legacy task protocol 中实际上游请求使用 `metadata.resolution`，但计费仍可能读取顶层 `resolution`，导致请求按 720p 转发却按 1080p 计费的问题。
+- 修复豆包 legacy task protocol 中显式传入空 `resolution` / `ratio` 时无法和未传字段区分的问题。
+- 修复 `doubao-seedance-2-0-fast-260128` 在 1080p / 4k 搭配视频输入时缺少价格组合，可能没有应用视频输入倍率的问题。
+- 修复 retry 日志中同时带有 `retry_log` 和 `empty_retry` 标记时只被归类为空输出重试，导致错误重试筛选和统计少算的问题。
+- 修复前端用量日志 retry 筛选只看合并标记、无法区分错误重试和空输出重试的问题。
+- 修复用量统计在查询历史时间窗口时，RPM / TPM 因同时套用历史范围和最近 60 秒范围而显示为 0 的问题。
+- 修复日志写入时 `BeforeCreate` 与 `BeforeSave` 同时同步 retry 标记，导致 `Other` JSON 每次创建被重复解析的问题。
+- 修复 Markdown / HTML 渲染链路中部分页面缺少统一清洗逻辑，公告或配置内容在不同入口显示安全性不一致的问题。
+- 修复通知重复展示和已读状态恢复不稳定的问题，减少刷新或重新打开页面后的重复提醒。
+- 修复 Playground 查询失败或选项列表为空时，模型 / 分组选择器可能保留不可用旧值的问题。
+- 修复 Playground 输入连续超长文本时，输入框宽度可能无限变宽并把配置、发送按钮顶到屏幕外的问题。
+- 清理 `jsonwrapcheck` 过期 allowlist 条目，避免移除直接 `encoding/json` 调用后 CI 仍因 stale baseline 失败。
+
+### Compatibility Notes
+
+- `tasks.private_data` 新增 `node_name` JSON 字段；历史任务没有该字段时会回退使用当前处理节点，保持兼容。
+- `quota_data` 表新增 `use_group`、`token_id`、`channel_id`、`node_name` 字段，升级后会随迁移自动补齐。
+- 现有用户维度用量查询会继续返回聚合后的总量；新增维度主要影响数据导出、内部归因和后续更细粒度分析。
+- 多节点部署建议显式配置稳定的 `NODE_NAME`，这样异步任务日志和用量数据可以稳定归属到提交任务的实例。
+- Seedance 2.0 的基础计费配置仍以无视频输入基础档为准；1080p、4k 和视频输入组合由系统根据请求内容自动计算倍率。
+- Seedance 2.0 fast 模型高分辨率请求仍不额外叠加分辨率倍率，但 1080p / 4k 搭配视频输入时会应用 fast 模型的视频输入倍率；上游不支持的参数仍由上游校验。
+- 旧渠道重新保存时，前端会清理已废弃的 `request_body_mode` / mapping / defaults 字段；只保留路径覆盖的渠道会继续作为路径覆盖配置保存。
+- `task_protocol_config` 不再包含请求体生成 DSL；需要原样透传请求体时使用渠道 `Pass Through Body`，需要字段映射或默认值时使用 `Param Override`。
+- 任务 `Param Override` 现在会影响最终计费输入；如果旧配置曾通过默认值或字段改写改变时长、分辨率、尺寸或输入媒体，升级后预扣费会与实际上游请求保持一致。
+- 如果任务 `Param Override` 把字段改写到上游专用的 `parameters` / `input` / 媒体数组结构，升级后这些字段也会进入计费推断；建议检查旧规则是否依赖改写前的低价默认值。
+- 新增通用任务 rate card 后，管理员可为任意视频模型配置参数化计费；未配置任务 rate card 的模型仍保持旧的模型价格 / 倍率计费行为。
+- 使用 `image_count` 作为匹配条件或数量字段时，顶层 `image` / `images` 只会按最终请求体计一次，`reference_images` 仍作为独立参考图输入计入。
+- 任务 header override 会在适配器默认请求头之后应用，配置中的运行时 header 可覆盖默认上游请求头；请确认 `set_header` / `pass_headers` 规则不会意外覆盖认证或内容类型。
+- Seedance 响应形态仍通过通用结果解析和豆包响应形态兜底兼容，但旧协议值本身不会再启用专用请求体构建路径。
+- Responses → Chat 兼容模式不支持需要服务端状态管理的 Responses 字段；请求包含 `conversation`、`previous_response_id`、`prompt` 或 `context_management` 时会返回明确错误。
+- Responses → Chat 兼容模式面向标准 Chat Completions 上游，不支持 `custom_tool_call`、custom tool 或 freeform tool；Gemini 通道会在自身兼容路径中过滤这类不兼容工具。
+- Gemini Responses 兼容路径以 Chat Completions 中间形态转换为基础；Gemini 不支持的 custom / freeform 输入项会被过滤，非 function tool 会返回明确错误，不再静默丢弃。
+- Advanced Custom 的 `openai_responses_to_openai_chat_completions` 转换器只匹配 `/v1/responses` 入站路径；其它路径仍按各自注册的转换器校验。
+- Responses 兼容层会保留可选参数显式零值语义，避免客户端明确传入的 `0` 或 `false` 在转发时丢失。
+- Responses → Chat replay 要求 `function_call` 带有 `call_id` 或 `id`，`function_call_output` 带有 `call_id`；缺失时会返回错误，调用方需要补齐有效 tool call 关联 ID。
+- Claude 工具调用参数为空字符串时会继续按空 object 兼容；参数存在但不是合法 JSON object 时会失败返回，不再静默改写为 `{}`。
+- Claude 响应转换遇到 malformed tool call `arguments` 时，会把原始字符串保存在 `tool_use.input.arguments`，不再把裸字符串直接作为 `input`。
+- 豆包 legacy task protocol 中 `resolution` / `ratio` 作为可选字段处理；显式空字符串会继续发送给上游，未提供字段才会省略。
+- DoubaoVideo 官方顶层 `callback_url`、`service_tier`、`safety_identifier` 和 `ratio` 也按可选字段处理；显式空字符串会保留，未传字段才会省略。
+- DoubaoVideo 的 Seedance 官方参数合并不会改变既有 `metadata` 覆盖优先级；已有通过 `metadata` 改写上游参数的渠道配置会继续优先生效。
+- multipart 任务请求仍走原有基础校验路径；本次官方 `content[]` 和顶层参数支持主要影响 JSON 请求体。
+- 前端富文本内容现在统一经过 sanitizer；依赖自定义 HTML 的部署需要确认内容符合允许的标签、属性和 iframe 来源规则。
+- Playground 输入区布局修复仅影响前端展示和响应式布局，不改变聊天请求体、模型 / 分组选择逻辑或后端计费语义。
+- `.tmp/RELEASE_NOTES_v1.0.4.md` 为内部发布草稿，不会进入 Git 提交；发布前如需公开版本，应复制到正式发布流程中重新审阅。
+
+### Verification
+
+- `go test ./relay/channel/task/doubao`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel/openai ./model ./service`
+- `go test ./model ./service`
+- `go test ./model -run "TestGetAllUnFinishSyncTasksIncludesNonTerminalHundredProgress|TestGetTimedOutUnfinishedTasksIncludesNonTerminalHundredProgress" -count=1`
+- `go test ./service -run "TestShouldApplyTaskResultProgressSkipsNonTerminalCompleteProgress" -count=1`
+- `go test ./service ./service/openaicompat`
+- `go test ./service/openaicompat ./relay/channel/claude ./relay/channel/gemini ./relay/channel/advancedcustom ./relay/channel/openai`
+- `go test ./service/openaicompat ./relay/channel/gemini ./relay/channel/advancedcustom`
+- `go test ./service/openaicompat -run "TestResponsesResponseToChatCompletionsResponse|TestResponsesRequestToChatCompletionsRequest"`
+- `go test ./service -run "TestResponseOpenAI2(Gemini|Claude)"`
+- `go test ./model -run "Test(SumUsedQuotaRetryFilter|GetAllLogsRetrySubtypeFilters|SumUsedQuotaRetrySubtypeFilters|RetryFilterIgnoresNestedRetryMarker|RetryFilterBackfillsLegacyMarkersBeforeCompletion|RetryFilterUsesIsRetryAfterBackfillCompletion)$"`
+- `go test ./model -run "TestSumUsedQuotaKeepsRpmTpmLiveForHistoricalWindow"`
+- `go run ./tools/jsonwrapcheck`
+- `bun test src/components/html-content.test.ts src/components/ui/markdown.test.ts src/lib/renderable-content.test.ts src/hooks/notification-utils.test.ts src/stores/notification-store.test.ts src/features/usage-logs/lib/utils.test.ts src/features/playground/lib/query-state.test.ts src/features/playground/lib/selection-state.test.ts`
+- `bun test tests/channel-form.test.ts`
+- `bun run typecheck`
+- `bun run build`
+- Headless Chrome layout check for `/playground/` with a 4000-character continuous prompt at 390px and 1280px viewport widths
+- `go test ./service -run "TestRecalculate_PositiveDeltaAttributesQuotaDataToSubmitNode"`
+- `go test ./relay ./relay/channel ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel/task/gemini ./relay/channel/task/vertex ./relay/channel/task/ali ./relay/channel/task/kling ./controller -run "Test(PrepareTaskSubmitRequestBody|DoTaskApiRequestAppliesRuntimeHeaderOverride|ApplyTaskParamOverride|BuildConfiguredTask|EstimateBilling|EstimateTaskBilling|ShouldRetry)" -count=1`
+- `go test ./controller ./relay ./relay/channel ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel/task/ali ./relay/channel/task/gemini ./relay/channel/task/kling ./relay/channel/task/vertex ./relay/common ./service`
+- `go test ./relay/channel/task/doubao ./relay/channel/task/taskcommon ./relay/channel ./relay -count=1`
+- `go test ./relay/channel/task/taskcommon -run "TestEstimateGenericTaskBilling" -count=1`
+- `go test ./relay -run "TestPrepareTaskSubmitRequestBody|TestEstimateTaskBilling" -count=1`
+- `go test ./relay/channel/task/taskcommon ./relay/channel/task/doubao ./relay/channel/task/kling ./relay/channel/task/ali -count=1`
+- `go test ./relay/channel ./relay -count=1`
+- `bunx eslint src\features\channels\types.ts src\features\channels\lib\advanced-custom.ts`
+- `git diff --check -- relay/common/relay_info.go relay/channel/task/doubao/adaptor.go relay/channel/task/doubao/adaptor_billing_test.go relay/channel/task/taskcommon/request_body.go relay/channel/task/taskcommon/path_config_test.go`
+- `git diff --check`
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.3-preview.2...v1.0.4-preview.1
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/checksums-linux.txt">checksums-linux.txt</a> (188 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/checksums-macos.txt">checksums-macos.txt</a> (97 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/checksums-windows.txt">checksums-windows.txt</a> (95 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/max-api-arm64-v1.0.4-preview.1">max-api-arm64-v1.0.4-preview.1</a> (69.1 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/max-api-macos-v1.0.4-preview.1">max-api-macos-v1.0.4-preview.1</a> (88.4 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/max-api-v1.0.4-preview.1">max-api-v1.0.4-preview.1</a> (71.7 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.4-preview.1/max-api-v1.0.4-preview.1.exe">max-api-v1.0.4-preview.1.exe</a> (73.4 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.1.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.4-preview.1.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.3
+
+<Callout type="note" title="リリース版 · 公開日 2026-07-01 00:15:44 (UTC+8)">
+
+> [!NOTE]
+> 当前 MAX API 分为正式版和 Preview 预览版。Preview 预览版用于提前开放新能力和修复，便于在真实环境中验证兼容性、稳定性和安全性；正式版将在对应 Preview 预览版稳定运行 1 周后正式发布，以保障系统安全性和可靠性。
+
+### MAX API v1.0.3 正式版 Release Notes
+
+### GitHub 地址
+
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.3
+
+### Highlights
+
+- 新增系统信息与系统任务运维视图，Root 管理员可查看多节点实例心跳、资源状态、任务进度和历史执行结果。
+- 日志清理改为持久化系统任务执行，支持进度回写、任务锁、历史记录和前端进度展示，避免大批量删除日志时阻塞请求。
+- 加强支付、订阅、兑换码、邀请额度和任务计费链路的一致性，降低重复回调、重复兑换、重复退款和并发扣减造成的错账风险。
+- 新增 OpenAI Chat / Responses 空补全重试能力，并将内部空补全错误码与通用 `empty_response` 区分，避免影响 Gemini 等其它渠道的正常重试策略。
+- 优化用量日志加载体验：页面进入后不再自动查询大批量日志，搜索后加载列表，详情正文按需打开。
+- 完善后台运维能力：新增管理操作审计、SMTP STARTTLS / NTLM 兼容、通道自动测试模式、批量模型测试进度和用户令牌数量限制设置。
+- 首页与 Markdown 渲染能力增强，支持自定义首页按 URL、HTML、Markdown 自动识别，并改进公式、图表和富文本内容展示。
+- Markdown 内容净化进一步加固，在测试 / SSR 等非浏览器环境下不再回退输出原始 HTML，并提前拦截危险链接协议。
+- 修复公告栏 Markdown 链接渲染崩溃，并恢复用户打开网页后的公告自动弹出体验。
+- 继续完善前台交互体验：登录 / 注册协议确认、游乐场一键清空、模型 / 分组选择保护，以及首页、关于页、公告和法务文档的统一富文本渲染。
+- 补强流式请求和用量统计边界：异常流式结束且上游未返回 usage 时会按预扣额度兜底结算，并修正重试日志统计、环境默认值和可关闭流式超时等运行时细节。
+
+### New Features
+
+- 新增 Root 专属“系统信息”页面：
+  - 展示当前部署实例列表、在线 / 离线状态、Master / Worker 角色、运行时版本、启动时间和最后心跳时间。
+  - 展示 CPU、内存、磁盘使用情况，便于多节点部署时快速定位异常实例。
+  - 支持删除已离线实例记录，在线实例会被后端拒绝删除。
+- 新增系统实例心跳上报机制：
+  - 节点默认每 30 秒上报一次实例状态。
+  - 未配置 `NODE_NAME` 时使用主机名作为节点名，并在返回信息中标记建议显式配置。
+- 新增持久化系统任务模型：
+  - 支持 `pending`、`running`、`succeeded`、`failed` 状态。
+  - 支持任务锁、执行节点、进度状态、执行结果和错误信息记录。
+  - Root 管理员可查看系统任务列表、当前活跃任务和任务历史。
+- 日志清理新增异步系统任务：
+  - 后台日志维护页启动清理任务后显示进度条。
+  - 后端按批次删除旧日志并持续回写进度。
+  - 同一时间只保留一个活跃日志清理任务，重复触发会返回当前任务。
+- 新增结构化管理操作审计：
+  - 覆盖用户、渠道、兑换码、系统配置、Passkey、OAuth 解绑、手动补单等关键管理操作。
+  - 审计日志记录操作标识、参数、管理员信息、认证方式、路由和响应状态。
+  - 新增 `LogTypeLogin` 登录日志类型，为后续登录行为审计预留统一结构。
+- SMTP 邮件能力增强：
+  - 支持机会式 STARTTLS。
+  - 支持强制 STARTTLS。
+  - 支持 465 端口隐式 TLS。
+  - 支持 NTLM / LOGIN / PLAIN 自动认证选择。
+  - 支持服务器未声明 AUTH 时跳过认证发送。
+  - 后台 SMTP 设置新增安全模式和 TLS 校验相关配置。
+- 通道自动测试新增模式配置：
+  - `scheduled_all`：按计划测试全部可测试通道。
+  - `passive_recovery`：仅测试自动禁用通道，用于被动恢复。
+- 通道连接测试弹窗增强：
+  - 支持对筛选后的模型批量测试。
+  - 展示批量测试进度、成功数和失败数。
+  - 支持一键选择测试成功的模型。
+  - 支持复制选中的模型列表。
+  - 模型价格未配置时提供更明确的失败说明。
+- 安全设置新增“Token Limits”配置，可在后台调整每个用户最多可创建的令牌数量。
+- 用量日志新增详情接口：
+  - 管理员可按需查看完整日志详情。
+  - 普通用户只能查看自己的日志详情。
+  - 列表默认隐藏请求 / 响应审计正文，详情弹窗按需加载完整内容。
+- 用量日志筛选增强：
+  - 支持 `request_id`、`upstream_request_id` 等精确筛选。
+  - 任务日志和普通日志筛选栏补齐相同的请求 ID 查询能力。
+  - “所有类型”中新增 `Retry` 筛选项，可单独查询普通渠道重试和 OpenAI 空补全重试日志。
+- 用户管理新增余额状态筛选：
+  - 负余额
+  - 零余额
+  - 正常余额
+- 用户余额列新增负余额异常标记和说明提示。
+- 顶部导航新增自定义导航项配置，支持名称、链接和启用状态，并支持外部链接在桌面端与移动端统一展示。
+- 个人菜单新增系统信息入口，并遵循侧边栏模块可见性配置。
+- 自定义首页内容支持 URL、HTML、Markdown 自动识别：
+  - 完整 `http` / `https` URL 会作为 iframe 嵌入。
+  - HTML 片段会直接作为自定义首页内容渲染。
+  - 其它内容按 Markdown 渲染。
+- 公告中心恢复页面打开后的自动弹出能力：
+  - 有系统通知或公告内容时，页面会自动打开公告中心。
+  - “今日关闭”会在当天抑制后续自动弹出。
+  - 自动打开默认优先展示未读通知或未读公告。
+- 公告中心新增“今日关闭”操作，登录后和公开页面的通知入口都会共享当天关闭状态。
+- 关于页、公告详情、用户协议和隐私政策等内容页统一支持富文本渲染：
+  - Markdown 内容继续走 Markdown 渲染器。
+  - HTML 片段会先净化再渲染。
+  - 纯 iframe 片段可提取安全 `http` / `https` 地址进行嵌入展示。
+- Markdown 渲染器增强：
+  - 改用 `marked + DOMPurify` 渲染与净化内容。
+  - 支持 GFM、表格、任务列表、外链安全属性。
+  - 支持 KaTeX 数学公式。
+  - 支持简单 flow / sequence 图表代码块。
+  - 支持 `[========]` 分页分隔符和常用 emoji shortcode。
+- 登录 / 注册页协议确认交互增强：
+  - 用户协议和隐私政策勾选项会覆盖密码登录、Passkey、OAuth 和微信登录入口。
+  - 未勾选时在用户实际提交或点击第三方登录时提示错误，并自动聚焦到勾选项。
+  - 登录 / 注册按钮不再因为未勾选协议而直接置灰，降低用户不知道原因的情况。
+- 游乐场新增“一键清除聊天历史”操作：
+  - 有对话记录时可直接清空当前聊天。
+  - 生成中会禁用清空操作，避免与正在进行的请求冲突。
+  - 当前模型或分组不可用时会阻止继续发送，避免使用失效选择发起请求。
+- 兑换码批量复制改为只复制兑换码本身，方便直接分发。
+- README 新增稳定版 / Preview 预览版发布渠道说明，并同步到多语言文档。
+
+### Improvements
+
+- 支付、订阅、兑换码等事务路径统一使用 GORM v2 `clause.Locking` 行锁封装。
+- MySQL 下用户额度更新遇到 no-op `RowsAffected=0` 时，会在事务内确认用户是否存在，避免把有效订单误判为用户不存在。
+- Stripe / Creem / Waffo / Waffo Pancake / 手动补单等充值路径统一加强额度写入校验。
+- 兑换码创建和更新增加服务端额度正数校验，并补充后端 i18n 文案。
+- 订阅订单完成、过期、余额支付、预扣退款、用量回写等路径加强事务状态判断和幂等处理。
+- 订阅计费使用数据库事务时间，减少应用时间和数据库时间不一致导致的边界问题。
+- 订阅负向用量调整返回实际生效 delta，日志和结算字段按实际可退额度记录。
+- 邀请额度转余额增加并发扣减保护，避免并发兑换时重复扣减或超额转换。
+- 用户禁用、升降级等管理操作会主动失效用户缓存和令牌缓存，降低旧缓存继续生效的风险。
+- 日志删除从同步批量删除升级为系统任务执行，提升大表日志清理的可靠性和可观测性。
+- 日志查询改进精确文本筛选，减少空关键字和宽泛匹配造成的大范围扫描。
+- 日志模型新增 `is_retry` 标记字段，用于直接索引重试日志；升级时会对已有日志按顶层 `retry_log` / `empty_retry` 标记回填。
+- 重试日志回填改为迁移后异步执行；读取 `Retry` 日志前会兜底确认回填完成，避免升级启动被历史日志阻塞，同时保证旧日志仍可被筛选。
+- 重试日志筛选改为依赖 `retry_log` / `empty_retry` 标记，避免通过 `use_channel` 数组形态推断造成误匹配。
+- 成功日志与错误日志复用同一套重试元数据组装逻辑，统一写入 `admin_info.use_channel` 和 `retry_log` 标记。
+- 用量统计的额度、RPM、TPM 查询统一应用时间范围、日志类型、模型、用户、令牌、渠道、分组和 `Retry` 过滤条件，降低列表筛选与统计摘要不一致的情况。
+- 用量日志类型筛选统一归一化空值、`All Types`、`Retry` 和数字类型，保持前端本地列筛选与后端 API 查询语义一致。
+- 用量日志类型允许值统一由筛选配置导出，路由校验和筛选栏复用同一来源，降低后续新增类型时的配置漂移风险。
+- 用量日志列表和统计统一由 `searchVersion` 触发，避免首屏自动查询和重复刷新。
+- 用量日志页默认分页调整为 100 条，降低大表查询压力。
+- 用户搜索在关键字为空时不再拼接全字段 `LIKE '%%'`。
+- 用量日志展示新增模型徽标、用量统计摘要和更清晰的详情弹窗布局。
+- 用户侧日志会剥离管理员专用字段，仅暴露允许用户可见的 `audit_info`。
+- OpenAI Responses 兼容层增强：
+  - 支持 refusal 文本提取。
+  - 空输出可触发重试。
+  - EOF 且无可见输出时也可触发空补全检测。
+  - 流式前置事件增加缓冲上限，避免无界占用内存。
+  - 空补全不会触发自动禁用通道。
+  - 记录空补全重试链路，便于排查。
+- 自动通道测试支持“只测试自动禁用通道”模式，减少定时任务对正常通道的额外请求压力。
+- 批量新增通道逻辑拆分出可测试构造函数，并补充后端测试覆盖。
+- 通道密钥查看、通道增删改、标签批量操作和上游模型应用等管理动作写入结构化审计日志。
+- 渠道模型展示优化：添加 / 编辑渠道时的模型多选框，以及渠道列表的 Models 列会直接展示全部模型标签，不再折叠为 `+N`。
+- SMTP 发送流程统一走显式 client 流程，便于支持 STARTTLS、隐式 TLS、认证协商和错误处理。
+- 前端设置页补齐 SMTP 安全模式、通道测试模式、空补全重试、令牌数量限制等新配置项。
+- 公告中心的已读和自动弹出去重改为内容签名：
+  - 同一后端公告 ID 的内容被编辑后会被识别为新版本。
+  - 相同公告集合即使服务端返回顺序变化，也不会被误判为新内容。
+  - 已读公告、已读系统通知和“今日关闭”状态按用户隔离存储，避免切换账号后互相影响。
+  - 自动弹出记录提升到当前页面加载内的共享状态，公共页面切换导致 Header 重新挂载时不会重复弹出同一内容。
+  - 手动打开和定时器取消等边界场景下仍会正确记录已展示内容。
+- 移动端抽屉支持自定义外部导航链接。
+- 侧边栏模块可见性逻辑复用于个人菜单，避免被禁用的模块仍在菜单中出现。
+- 数据表批量操作栏、移动端卡片列表和部分后台表格交互细节优化。
+- 游乐场模型和分组加载逻辑改进：接口短暂失败时保留已有选项，选中项不可用时自动回落到可用模型或默认分组。
+- 前端依赖更新：升级 TanStack Router 相关包，引入 `marked`、`katex`、`dompurify` 支撑新的内容渲染能力。
+- JSON wrapper 检查工具清理失效 allowlist 条目，继续限制业务代码直接调用 `encoding/json`。
+- 环境变量驱动的运行时配置补齐包级默认值，保证 `InitEnv` 执行前后默认行为一致，并统一复用默认常量。
+- 流式扫描器支持将 `STREAMING_TIMEOUT=0` 作为关闭流式超时处理，不再创建非法 ticker。
+- 文本、音频和实时流式计费在异常结束且 quota 为 0 时，会优先使用实际预扣额度兜底结算；没有实际预扣记录时回落到模型预扣配置。
+
+### Bug Fixes
+
+- 修复 Gemini `empty_response` 在 `EmptyCompletionRetryEnabled=false` 时被误阻止重试的问题。
+- 修复 OpenAI 空补全内部重试复用通用 `empty_response` 错误码导致跨渠道语义混淆的问题。
+- 修复 Responses / Chat 流式空补全在缺少 `response.completed`、仅 EOF 结束时无法重试的问题。
+- 修复 Responses 流式处理在首个可见内容前无界缓存 SSE 事件导致 TTFB 和内存风险的问题。
+- 修复纯空白 delta 可能被误判为可见输出的问题。
+- 修复兑换码重复兑换可能导致重复加余额的问题。
+- 修复零额度或负额度兑换码可能进入后续兑换链路的问题。
+- 修复 MySQL no-op 更新可能导致有效充值或兑换被 `RowsAffected=0` 误判失败的问题。
+- 修复订阅订单重复完成时可能重复创建订阅或充值记录的问题。
+- 修复订阅预扣退款重复执行时可能重复返还额度的问题。
+- 修复订阅余额支付在余额不足时可能越界扣减的问题。
+- 修复订阅用量负向调整可能低于 0 或日志记录超额退款的问题。
+- 修复部分支付网关回调状态更新未严格限制 `pending` 状态的问题。
+- 修复邀请额度转余额的并发扣减一致性问题。
+- 修复用户管理余额筛选在空关键字下仍触发全字段模糊搜索的问题。
+- 修复日志列表展示序号与日志详情真实 ID 混用的问题。
+- 修复用量日志 `Retry` 与数字日志类型混合残留、空类型值残留或本地列筛选短路时，可能导致实际查询退回未筛选或页面行未正确过滤的问题。
+- 修复历史重试日志只能通过解析 `other` 字段推断，导致筛选和统计成本高、且嵌套审计字段可能误匹配的问题。
+- 修复重试日志回填在迁移阶段同步执行时，历史日志量较大可能拖慢或阻塞服务启动的问题。
+- 修复重试日志统计在显式日志类型、时间范围或 RPM / TPM 查询中可能没有完整套用筛选条件的问题。
+- 修复流式请求超时、客户端断开、扫描错误、ping 失败或 panic 后，上游未返回 usage 时可能记录 0 额度消费的问题。
+- 修复 `STREAMING_TIMEOUT=0` 时流式扫描器仍创建 ticker 并可能触发运行时 panic 的问题。
+- 修复部分环境变量配置在应用初始化前仍为 Go 零值，导致默认流式超时、文件大小限制、通知频率、任务超时等配置不一致的问题。
+- 修复日志清理请求取消、长时间运行和前端无进度反馈的问题。
+- 修复通道自动测试在被动恢复场景下仍可能触发自动禁用的问题。
+- 修复通道测试模型表格在筛选、分页和批量选择时选择状态不稳定的问题。
+- 修复 SMTP 服务器支持 STARTTLS 时未自动升级连接的问题。
+- 修复强制 STARTTLS 时服务端不支持 STARTTLS 仍继续发送的问题。
+- 修复 465 端口隐式 TLS、无 AUTH 服务端、QUIT 阶段连接关闭等邮件发送兼容问题。
+- 修复点击或打开包含 Markdown 链接的公告时可能出现 `parseInline` 报错的问题。
+- 修复公告栏自动弹出逻辑缺失，导致用户打开网页后不再自动看到公告的问题。
+- 修复同一公告 ID 内容更新后仍被视为已读、不会再次提示的问题。
+- 修复公告返回顺序变化时自动弹出去重签名抖动的问题。
+- 修复公告中心手动打开后关闭时，同一内容可能立即再次自动弹出的问题。
+- 修复公告自动弹出定时器被取消时提前记录签名，导致后续真正需要弹出时被跳过的问题。
+- 修复公告已读和“今日关闭”状态未按用户隔离，切换账号后可能继承上一个用户通知状态的问题。
+- 修复自定义首页 HTML / iframe 内容可能被当作普通 Markdown 展示的问题。
+- 修复关于页、公告详情和法务文档中 HTML 片段可能未走统一净化渲染的问题。
+- 修复 Markdown sanitizer 在无可用 DOMPurify 实例时可能返回未净化 HTML 的安全问题。
+- 修复 Markdown 链接中 `javascript:` / `data:` 等危险协议未在渲染阶段提前降级的问题。
+- 修复 Markdown 外链、公式、图表和部分 HTML 内容渲染不完整的问题。
+- 修复登录 / 注册页在未勾选协议时直接禁用提交或第三方登录入口，导致用户缺少明确错误提示的问题。
+- 修复游乐场模型或分组加载失败后仍可能保留不可用选择并继续发送请求的问题。
+- 修复系统信息入口未遵循侧边栏模块配置的问题。
+
+### Compatibility Notes
+
+- 新增 `system_instances` 和 `system_tasks` 数据表，升级后会随迁移自动创建。
+- 新增 `NODE_NAME` 节点标识支持；多节点、容器和 Kubernetes 部署建议显式配置，未配置时会使用主机名。
+- 系统实例超过 90 秒未上报会被标记为 `stale`。
+- 日志清理行为变化：前端会启动异步系统任务并显示进度，不再依赖一次请求内同步删除全部旧日志。
+- 新增 `monitor_setting.channel_test_mode` 配置项，默认 `scheduled_all`；设置为 `passive_recovery` 后定时任务只测试自动禁用通道。
+- `CHANNEL_TEST_FREQUENCY` 环境变量仍会启用定时通道测试，并按兼容逻辑使用 `scheduled_all` 模式。
+- 新增 `EmptyCompletionRetryEnabled` 配置项，默认关闭；启用时仍需配置 `RetryTimes > 0`。
+- OpenAI 空补全内部错误码从通用 `empty_response` 独立为 `empty_completion`。
+- Gemini 等其它渠道返回的 `empty_response` 继续按普通状态码重试策略处理。
+- 新增 `SMTPStartTLSEnabled` 和 `SMTPInsecureSkipVerify` 配置项。
+- 新增 `SMTP_STARTTLS_ENABLE` / `SMTP_STARTTLS_ENABLED`、`SMTP_INSECURE_SKIP_VERIFY` / `SMTP_TLS_INSECURE_SKIP_VERIFY` 环境变量兼容读取。
+- `SMTPInsecureSkipVerify` 默认关闭；只有在需要兼容自签名或特殊 SMTP 证书时才建议开启。
+- 新增 `token_setting.max_user_tokens` 配置项，默认值为 1000。
+- 用量日志页行为变化：进入页面不会立即加载日志，需要点击“搜索”。
+- 用量日志默认分页大小调整为 100。
+- 用量日志详情按需加载；列表中不再直接携带完整请求 / 响应审计正文。
+- 用量日志 `Retry` 是独立筛选条件，通过 `log_filter=retry` 传递。
+- `logs` 表新增 `is_retry` 字段并建立索引；迁移会按 `LOG_SQL_DSN` 维度记录回填完成标记，避免多日志库部署互相跳过回填。回填会异步调度，首次读取 `Retry` 日志时若尚未完成会同步兜底一次。
+- 若 URL 或列筛选状态残留空值 / `All Types` 会按未筛选处理；`Retry` 与具体日志类型混合时按 `Retry` 处理。
+- `STREAMING_TIMEOUT=0` 现在表示关闭流式超时；保持默认配置时仍使用 300 秒。
+- 异常结束的流式请求在无上游 usage 且存在预扣额度时，可能会从此前 0 额度记录变为按预扣额度结算，以避免超时或断连场景漏计费。
+- `STREAMING_TIMEOUT`、`STREAM_SCANNER_MAX_BUFFER_MB`、`MAX_REQUEST_BODY_MB`、`ANONYMOUS_REQUEST_BODY_LIMIT_KB`、`AZURE_DEFAULT_API_VERSION`、通知限制和任务限制等默认值被提升为常量并在包初始化阶段生效。
+- 顶部导航配置结构新增 `custom` 字段，旧配置按默认值兼容。
+- 自定义首页、关于页和法务文档内容现在会自动识别 URL、HTML、Markdown；HTML 内容会经过前端净化，脚本等不安全内容不会按原样执行。
+- 公告中心自动弹出会记录当前页面加载内的用户级内容签名；同一内容在 Header 重新挂载或页面内路由切换时不会重复自动弹出，刷新页面后会重新计算。
+- 公告中心已读状态和“今日关闭”状态会迁移为按用户作用域存储；旧匿名状态会迁移到 `anonymous` 作用域。
+- 点击“今日关闭”后当天不再自动弹出。
+- Markdown 净化失败时会失败关闭并渲染空内容，而不是输出未净化 HTML；不安全链接协议会被降级为普通文本或无 `href` 链接。
+- Markdown 渲染依赖变更为 `marked`、`DOMPurify`、`KaTeX`，旧的 `react-markdown` / `remark-gfm` / `rehype-raw` 依赖已移除。
+- 行锁封装在 SQLite 下不会启用 `FOR UPDATE`；MySQL / PostgreSQL 使用数据库行锁能力。
+- 订阅用量调整函数返回值发生变化，内部调用已同步为实际应用 delta。
+- 管理操作会新增结构化管理日志，开启审计和日志留存的部署需要注意日志量增长。
+
+### Verification
+
+- `go test ./...`
+- `go test ./common`
+- `go test ./model`
+- `go test ./model -run "Test(GetAllLogsRetryFilter|GetUserLogsRetryFilter|SumUsedQuotaRetryFilter)$"`
+- `go test ./model -run "Test(BackfillLogRetryMarker|LogRetryMarker|RetryFilter)"`
+- `go test ./model -run "Test(GetAllLogsRetryFilter|GetUserLogsRetryFilter|SumUsedQuota|RetryFilter|BackfillLogRetryMarker|MigrateLOGDBSchedulesRetryMarkerBackfill|ScheduleLogRetryMarkerBackfill|LogRetryMarker)"`
+- `go test ./controller`
+- `go test ./controller -run "TestShouldRetry|Test.*Relay|Test.*Retry"`
+- `go test ./relay/channel/openai`
+- `go test ./relay/helper -run "Test(NewStreamingTimeoutTicker|StreamScannerHandler_AllowsDisabledStreamingTimeout|StreamScannerHandler_StreamStatus_Timeout)$"`
+- `go test ./service ./service/openaicompat`
+- `go test ./service -run "TestGenerateTextOtherInfo"`
+- `go test ./service -run "Test(StreamFallbackQuota|PostTextConsumeQuotaUpdatesUsageStatsForStreamFallback|CalculateTextQuotaSummary)"`
+- `go test ./constant`
+- `bun test src/components/html-content.test.ts`
+- `bun test src/components/ui/markdown.test.ts`
+- `bun test src/lib/renderable-content.test.ts`
+- `bun test src/features/playground/lib/query-state.test.ts`
+- `bun test src/features/playground/lib/selection-state.test.ts`
+- `bun test src/hooks/notification-utils.test.ts`
+- `bun test src/stores/notification-store.test.ts`
+- `bun test src/features/usage-logs/lib/utils.test.ts`
+- `bunx eslint` 针对变更的前端文件
+- `bun run typecheck`
+- `bun run i18n:sync`
+- `git diff --check`
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.2...v1.0.3
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/checksums-linux.txt">checksums-linux.txt</a> (168 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/checksums-macos.txt">checksums-macos.txt</a> (87 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/checksums-windows.txt">checksums-windows.txt</a> (85 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/MAX-API-App.1.0.3.exe">MAX-API-App.1.0.3.exe</a> (107.7 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/MAX-API-App.Setup.1.0.3.exe">MAX-API-App.Setup.1.0.3.exe</a> (108.0 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/max-api-arm64-v1.0.3">max-api-arm64-v1.0.3</a> (68.9 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/max-api-macos-v1.0.3">max-api-macos-v1.0.3</a> (88.3 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/max-api-v1.0.3">max-api-v1.0.3</a> (71.6 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3/max-api-v1.0.3.exe">max-api-v1.0.3.exe</a> (73.3 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.3.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.3.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.3-preview.2
+
+<Callout type="note" title="リリース版 · 公開日 2026-06-27 09:52:44 (UTC+8)">
+
+> [!NOTE]
+> 当前 MAX API 分为正式版和 Preview 预览版。Preview 预览版用于提前开放新能力和修复，便于在真实环境中验证兼容性、稳定性和安全性；正式版将在对应 Preview 预览版稳定运行 1 周后正式发布，以保障系统安全性和可靠性。
+
+### Release Notes
+
+### GitHub地址：
+https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.3-preview.2
+### Highlights
+
+- 加强支付、订阅、兑换码、邀请额度和任务计费链路的一致性，降低重复回调、重复兑换、重复退款和并发扣减造成的错账风险。
+- 新增 OpenAI Chat / Responses 空补全重试能力，并将内部空补全错误码与通用 `empty_response` 区分，避免影响 Gemini 等其它渠道的正常重试策略。
+- 优化用量日志加载体验：页面进入后不再自动查询大批量日志，搜索后加载列表，详情正文按需打开。
+- 用户管理新增余额状态筛选和负余额提示，便于快速定位异常账户。
+- 后台顶部导航支持配置自定义导航项，方便接入站内页面或外部链接。
+
+### New Features
+
+- 系统设置新增“空补全重试”开关 `EmptyCompletionRetryEnabled`。
+- 新增内部错误码 `empty_completion`，专用于 OpenAI Responses 空补全重试链路。
+- 用量日志新增详情接口：
+  - 管理员可查看完整日志详情。
+  - 普通用户只能查看自己的日志详情。
+- 用户管理新增余额状态筛选：
+  - 负余额
+  - 零余额
+  - 正常余额
+- 用户余额列新增负余额异常标记和说明提示。
+- 顶部导航新增自定义导航项配置，支持名称、链接和启用状态。
+- 兑换码批量复制改为只复制兑换码本身，方便直接分发。
+
+### Improvements
+
+- 支付、订阅、兑换码等事务路径统一使用 GORM v2 `clause.Locking` 行锁封装。
+- MySQL 下用户额度更新遇到 no-op `RowsAffected=0` 时，会在事务内确认用户是否存在，避免把有效订单误判为用户不存在。
+- Stripe / Creem / Waffo / Waffo Pancake / 手动补单等充值路径统一加强额度写入校验。
+- 兑换码创建和更新增加服务端额度正数校验，并补充后端 i18n 文案。
+- 订阅订单完成、过期、余额支付、预扣退款、用量回写等路径加强事务状态判断和幂等处理。
+- 订阅计费使用数据库事务时间，减少应用时间和数据库时间不一致导致的边界问题。
+- 订阅负向用量调整返回实际生效 delta，日志和结算字段按实际可退额度记录。
+- 用量日志列表默认隐藏请求/响应审计正文，详情弹窗按需加载完整内容。
+- 用量日志列表和统计统一由 `searchVersion` 触发，避免首屏自动查询和重复刷新。
+- 用量日志页默认分页调整为 100 条，降低大表查询压力。
+- 用户搜索在关键字为空时不再拼接全字段 `LIKE '%%'`。
+- OpenAI Responses 兼容层增强：
+  - 支持 refusal 文本提取。
+  - 空输出可触发重试。
+  - EOF 且无可见输出时也可触发空补全检测。
+  - 流式前置事件增加缓冲上限，避免无界占用内存。
+  - 空补全不会触发自动禁用通道。
+  - 记录空补全重试链路，便于排查。
+
+### Bug Fixes
+
+- 修复 Gemini `empty_response` 在 `EmptyCompletionRetryEnabled=false` 时被误阻止重试的问题。
+- 修复 OpenAI 空补全内部重试复用通用 `empty_response` 错误码导致跨渠道语义混淆的问题。
+- 修复 Responses / Chat 流式空补全在缺少 `response.completed`、仅 EOF 结束时无法重试的问题。
+- 修复 Responses 流式处理在首个可见内容前无界缓存 SSE 事件导致 TTFB 和内存风险的问题。
+- 修复纯空白 delta 可能被误判为可见输出的问题。
+- 修复兑换码重复兑换可能导致重复加余额的问题。
+- 修复零额度或负额度兑换码可能进入后续兑换链路的问题。
+- 修复 MySQL no-op 更新可能导致有效充值或兑换被 `RowsAffected=0` 误判失败的问题。
+- 修复订阅订单重复完成时可能重复创建订阅或充值记录的问题。
+- 修复订阅预扣退款重复执行时可能重复返还额度的问题。
+- 修复订阅余额支付在余额不足时可能越界扣减的问题。
+- 修复订阅用量负向调整可能低于 0 或日志记录超额退款的问题。
+- 修复部分支付网关回调状态更新未严格限制 `pending` 状态的问题。
+- 修复邀请额度转余额的并发扣减一致性问题。
+- 修复用户管理余额筛选在空关键字下仍触发全字段模糊搜索的问题。
+
+### Compatibility Notes
+
+- 新增 `EmptyCompletionRetryEnabled` 配置项，默认关闭；启用时仍需配置 `RetryTimes > 0`。
+- OpenAI 空补全内部错误码从通用 `empty_response` 独立为 `empty_completion`。
+- Gemini 等其它渠道返回的 `empty_response` 继续按普通状态码重试策略处理。
+- 用量日志页行为变化：进入页面不会立即加载日志，需要点击“搜索”。
+- 用量日志默认分页大小调整为 100。
+- 顶部导航配置结构新增 `custom` 字段，旧配置按默认值兼容。
+- 行锁封装在 SQLite 下不会启用 `FOR UPDATE`；MySQL / PostgreSQL 使用数据库行锁能力。
+- 订阅用量调整函数返回值发生变化，内部调用已同步为实际应用 delta。
+
+### Verification
+
+- `go test ./...`
+- `go test ./model`
+- `go test ./controller`
+- `go test ./relay/channel/openai`
+- `go test ./service ./service/openaicompat`
+- `bunx eslint` 针对变更的前端文件
+- `bun run typecheck`
+- `bun run i18n:sync`
+- `git diff --check`
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.3-preview.2.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.3-preview.2.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.3-preview
+
+<Callout type="note" title="リリース版 · 公開日 2026-06-25 02:13:49 (UTC+8)">
+
+### MAX API v1.0.3 Preview Release Notes
+
+GitHub地址：https://github.com/MAX-API-Next/MAX-API/releases/tag/v1.0.3-preview
+
+### Highlights
+
+v1.0.3 Preview 聚焦企业部署兼容性、AGI 治理审计、渠道可靠性、日志维护能力与后台管理体验优化。
+
+本版本补齐了 SMTP STARTTLS / NTLM、完整登录与管理操作审计、系统任务式日志清理、被动渠道恢复、用户 Token 数量限制 UI、节点身份信息等能力，并修复了用户 ID 搜索、日志清理权限、批量渠道审计名称等问题。
+
+### New Features
+
+#### SMTP STARTTLS / NTLM 支持
+
+- 新增 SMTP STARTTLS 支持，提升 587 端口企业邮箱兼容性。
+- 新增 NTLM 认证支持，适配 Exchange、Outlook 等企业邮件系统。
+- 支持无账号 SMTP 场景跳过认证。
+- STARTTLS 改为机会式协商，并支持强制 STARTTLS 配置。
+- 修复邮件发送中 `QUIT` 返回异常导致“已投递但被判定失败”的问题。
+
+#### 完整登录与管理操作审计链路
+
+- 新增 `LogTypeLogin = 7` 登录日志类型。
+- 登录成功写入结构化审计日志。
+- 管理操作写入 `op.action` / `op.params` 结构化字段。
+- Admin / Root 写接口增加兜底审计能力。
+- 前端使用日志支持 type=7 登录日志展示与筛选。
+- 审计内容适配用户可见日志审计逻辑，增强用户知情与管理员行为留痕。
+
+#### 系统任务式日志清理
+
+- 新增 `SystemTask` 持久化任务模型。
+- 日志清理改为异步任务执行，支持进度、状态、失败原因查询。
+- 运维日志设置页新增日志清理进度展示。
+- 保留旧版 `DELETE /api/log/` 同步删除兼容接口。
+- 修复 PostgreSQL 下批量删除可能不受 `LIMIT` 限制的问题。
+- 修复日志清理任务启动与状态查询权限不一致的问题。
+
+#### 渠道测试与被动恢复
+
+- 新增渠道测试模式配置。
+- 支持 `passive_recovery` 被动恢复模式，只针对真实失败后被自动禁用的渠道进行恢复探测。
+- 新增渠道测试相关环境变量开关。
+- 减少全量定时探测对上游和系统资源的压力。
+
+#### 用户 Token 数量限制 UI
+
+- 后台设置页新增 Token Limits 配置入口。
+- 对接已有 `token_setting.max_user_tokens` 后端限制能力。
+- 管理员可直接在后台配置单用户可创建令牌数量上限。
+
+#### 节点身份与系统实例信息
+
+- `NodeName` 未配置时自动回退到主机名。
+- 新增系统实例信息暴露能力。
+- 改善多实例部署下 system task runner、日志清理和节点识别体验。
+- 支持清理无效/离线实例信息。
+
+### Improvements
+
+#### 用户管理搜索优化
+
+- 用户管理页搜索框支持按用户 ID 搜索。
+- 修复后端已返回 ID 命中用户，但前端表格本地过滤又把结果过滤掉的问题。
+- 搜索文案更新为“按用户 ID、用户名、姓名或邮箱筛选”。
+- 同步更新 en / zh / fr / ja / ru / vi 翻译。
+- 修复 React Query 依赖提示，避免 lint 警告。
+
+#### 使用日志模型图标补全
+
+- 补全 MiniMax、智谱、百度、讯飞、腾讯、百川、InternLM、Stepfun、Yi 等国产模型识别。
+- 使用日志列表中的模型徽标展示更完整。
+
+#### Markdown 渲染器重构
+
+- Markdown 渲染从 `react-markdown + rehypeRaw` 切换为 `marked + DOMPurify`。
+- 提升富文本渲染安全性。
+- 扩展流程图、序列图等语法能力。
+- 适用于公告、法律文档、关于页、主页自定义内容等场景。
+
+#### 前端体验修复
+
+- `dompurify` 升级到 `3.4.11`。
+- 钱包模块关闭时，Profile 下拉菜单隐藏 Wallet 入口。
+- 渠道卡片视图同步选中态。
+- 计费历史弹窗列表不再遮挡分页。
+- 模型定价可视化删除行后立即从列表消失。
+
+### Bug Fixes
+
+- 修复异步日志清理启动接口为 AdminAuth，但状态查询接口为 RootAuth 导致非 root 管理员无法查看清理进度的问题。
+- 修复日志清理 `DeleteOldLogBatch` 在 SELECT 与 DELETE 之间 context 取消时仍可能继续删除的问题。
+- 修复批量创建渠道开启 key 前缀命名时，审计日志记录原始渠道名而不是实际创建渠道名的问题。
+- 修复批量渠道构造时指针复用导致名称前缀可能累加污染的问题。
+- 修复旧同步日志删除入口兼容性，继续返回同步删除数量 `data: count`。
+- 修复登录审计中重复顶层 `login_method` 字段，仅保留结构化 `op.params.method`。
+
+### Compatibility Notes
+
+- SMTP TLS 证书校验默认更安全；如企业邮箱使用自签名证书或证书主机名不匹配，需要显式开启兼容配置。
+- 旧版同步日志删除接口仍保留，推荐新前端和新集成使用 system task 日志清理接口。
+- 泛用系统任务列表和详情仍保持 Root 权限；日志清理专用状态接口对 Admin 可见。
+
+### Verification
+
+本版本已通过后端测试、Go vet、JSON wrapper 检查、前端 typecheck、针对性 ESLint 与 diff 检查。
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/checksums-linux.txt">checksums-linux.txt</a> (184 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/checksums-macos.txt">checksums-macos.txt</a> (95 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/checksums-windows.txt">checksums-windows.txt</a> (93 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/max-api-arm64-v1.0.3-preview">max-api-arm64-v1.0.3-preview</a> (68.9 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/max-api-macos-v1.0.3-preview">max-api-macos-v1.0.3-preview</a> (87.9 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/max-api-v1.0.3-preview">max-api-v1.0.3-preview</a> (71.5 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.3-preview/max-api-v1.0.3-preview.exe">max-api-v1.0.3-preview.exe</a> (73.0 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.3-preview.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.3-preview.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.2 界面重构、后台优化、安全加固
+
+<Callout type="note" title="リリース版 · 公開日 2026-06-22 12:53:09 (UTC+8)">
+
+### MAX API Release Notes
+### 2026-06-21 ~ 2026-06-22
+
+#### 概览
+本次更新以界面重构、后台设置优化、鉴权安全加固和文档补全为主。
+
+<img width="2560" height="1271" alt="image" src="https://github.com/user-attachments/assets/e032abea-fb70-4dd2-9fba-b0fe74032794" />
+
+### 主要更新
+
+#### 前端体验重构
+
+- 优化首页排版、文案层级、毛玻璃面板、动态扫描线、网格背景和响应式布局。
+- 重新设计登录页 UI，将首页球形视觉复用到登录场景，并支持使用后台配置的系统徽标。
+- 优化导航栏展示，并新增 MAX API GitHub 入口。
+
+#### 后台治理能力
+
+- 新增“排行榜”独立开关，可在后台单独控制排行榜页面是否启用、是否要求登录访问。
+- 将 `RankingsModule` 从旧的 `HeaderNavModules` 中拆分为独立配置项，同时保留旧配置回退逻辑。
+- 收敛前端导航模块解析逻辑，减少 HeaderNav 配置解析的重复实现。
+- 优化系统设置表单的保存、重置和配置合并逻辑，降低 stale write 风险。
+
+#### 日志与审计
+
+- 状态接口新增日志审计开关信息，前端可展示当前日志审计是否开启。
+- 使用日志页面新增“日志审计已开启 / 已关闭”状态标识。
+- 当后台开启请求或响应内容审计时，普通用户可在其有权限访问的日志详情中看到对应审计内容。
+- 用户侧日志会剥离管理员专用字段，仅暴露允许用户可见的 `audit_info`。
+- 新增后端测试覆盖用户侧日志审计内容暴露和关闭场景。
+
+#### 安全加固
+
+- 会话鉴权改为基于最新用户缓存刷新，避免用户被禁用或降权后旧 session 继续保留原权限。
+- 新增 `SESSION_COOKIE_SECURE` 环境变量，用于控制 session cookie 是否启用 Secure。
+- Gin trusted proxies 改为显式配置，默认信任本机与私网地址段，并支持 `TRUSTED_PROXIES` 覆盖。
+- `TokenAuthReadOnly` 现在拒绝禁用和过期 token，仅允许额度耗尽 token 查询自身只读用量或日志。
+- SSRF 防护增强：对域名解析后的 IP 进行校验，并在受保护 HTTP Client 中绑定最终拨号地址，降低 DNS rebinding 风险。
+- SSRF 保护客户端禁用环境代理，避免代理侧解析绕过本机目的地址校验。
+- Midjourney / 视频代理等链路对 SSRF protected client 的使用做了补强。
+
+#### 工程质量与 CI
+
+- 新增 GitHub Actions CI，覆盖后端测试、`go vet`、JSON wrapper policy、前端 typecheck 和 build。
+- 修复 release workflow，统一 MAX API 构建产物命名为 `max-api-*`。
+- Release 构建改为从 `web` workspace 安装依赖，再构建 `web/default`。
+- 固定 Bun 版本为 `1.3.14`，提高 CI / Release 构建稳定性。
+- 新增 `tools/jsonwrapcheck`，用于阻止新增业务代码直接调用 `encoding/json`。
+- 更新 JSON wrapper allowlist，清理失效条目。
+
+#### 文档与社区信息
+
+- README 增加社区访问信息：
+  - GitHub：https://github.com/MAX-API-Next
+  - QQ：950126533
+  - 微信群：搜索 MAX-API
+- 修正 README 语言入口链接。
+- 新增 v1.0.0 release notes 文档。
+- 更新 Issue / PR 模板和部分 workflow 文案，统一 MAX API 项目信息。
+
+### 兼容性说明
+
+- `RankingsModule` 已成为排行榜显示控制的新配置源；旧的 `HeaderNavModules.rankings` 仍作为兼容回退。
+- `TRUSTED_PROXIES` 未配置时，默认信任本机与私网地址段；公网直连部署可按需收紧。
+- `SESSION_COOKIE_SECURE` 默认仍为 `false`，HTTPS 部署建议显式设置为 `true`。
+- 日志审计内容属于敏感信息，开启后用户可在其有权限访问的日志详情中看到相应请求/响应内容。
+
+#### 验证
+- `go test ./common ./service`
+- 相关前后端设置项与翻译已同步更新
+
+**Full Changelog**: https://github.com/MAX-API-Next/MAX-API/compare/v1.0.1...v1.0.2
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.2.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.2.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.1 新版主页UI设计
+
+<Callout type="note" title="リリース版 · 公開日 2026-06-20 23:47:09 (UTC+8)">
+
+### MAX API Release Notes
+
+### Version
+
+- Release: `v1.0.0-4-g2a504c9`
+- Base tag: `v1.0.0`
+- Commit: `2a504c9 新版主页UI设计`
+- Date: `2026-06-20`
+
+<img width="1902" height="1031" alt="image" src="https://github.com/user-attachments/assets/278a4182-9cb9-43a7-bd2f-e8f817c0202a" />
+
+### Highlights
+
+- 全面重构默认前端主页 UI，升级为更具科技感的深色视觉体系。
+- 新增动态球形与轨道视觉，围绕 MAX API 的治理、路由、审计、计费等核心能力进行表达。
+- 首页主视觉中心改为 MAX API Logo，并优化球形层级，避免高光或节点遮挡 Logo。
+- 公共导航栏新增 MAX API GitHub 入口，桌面端与移动端均支持访问。
+- 重写首页核心文案，减少中英文混杂，使产品定位更统一、更专业。
+
+### Frontend
+
+- 重构首页 Hero、Stats、Features、How It Works、CTA 等模块。
+- 新增毛玻璃、动态光带、轨道层、遥测面板等视觉样式。
+- 优化首页顶部安全间距，避免动态导航栏遮挡首屏内容。
+- 删除首屏顶部品牌 Chip 与状态 Badge，减少布局冲突。
+- 治理矩阵调整为 8 个功能项，提升排版平衡性。
+- 完善多语言文案，同步更新 `en`、`zh`、`fr`、`ja`、`ru`、`vi` 语言文件。
+
+### Navigation
+
+- 新增 GitHub 图标按钮，链接至：
+
+  `https://github.com/MAX-API-Next/MAX-API`
+
+- 优化导航栏位置与移动端紧凑布局。
+
+### Compatibility
+
+- 本版本主要为默认前端 UI 与文案更新。
+- 无数据库迁移。
+- 无后端接口协议变更。
+- 无额外环境变量或配置项要求。
+
+
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/42ec0147ac1249b0932d72e8b987f5ba.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/117ade8246704a9a9e2ef67ebdb53e5b.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/260f6923dba749e6bf8bf45c350d5bf7.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/fb9c3b6e1e924fb79d7a2c567c0c94ec.png)
+
+### Validation
+
+已通过以下检查：
+
+- `git diff --check`
+- `bun run typecheck`
+- `bun run build`
+
+### Changed Files
+
+主要变更集中在：
+
+- `web/default/src/features/home/`
+- `web/default/src/components/layout/components/public-header.tsx`
+- `web/default/src/styles/index.css`
+- `web/default/src/i18n/locales/`
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/checksums-linux.txt">checksums-linux.txt</a> (168 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/checksums-macos.txt">checksums-macos.txt</a> (87 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/checksums-windows.txt">checksums-windows.txt</a> (85 B)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/MAX-API-App.1.0.1.exe">MAX-API-App.1.0.1.exe</a> (106.8 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/MAX-API-App.Setup.1.0.1.exe">MAX-API-App.Setup.1.0.1.exe</a> (107.1 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/max-api-arm64-v1.0.1">max-api-arm64-v1.0.1</a> (67.3 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/max-api-macos-v1.0.1">max-api-macos-v1.0.1</a> (86.2 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/max-api-v1.0.1">max-api-v1.0.1</a> (69.7 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/releases/download/v1.0.1/max-api-v1.0.1.exe">max-api-v1.0.1.exe</a> (71.4 MB)</li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.1.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.1.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+
+## v1.0.0
+
+<Callout type="note" title="リリース版 · 公開日 2026-06-20 01:45:07 (UTC+8)">
+
+### MAX API v1.0.0 发布说明
+
+本说明面向正在评估或准备从 New API 迁移的用户。基于当前 MAX API 代码与本地 `new-api-1.0.0-rc.13` 代码、README 和配置文档对比，MAX API v1.0.0 延续 New API/One API 的多模型网关、用户与令牌、计费、日志、Docker 部署和三数据库兼容基础，并进一步聚焦 AI 模型治理、AgentOps、渠道配置治理、异步任务治理和成本核算。
+
+一句话概括：MAX API 不只是把多个模型接口统一到一个入口，而是把模型、渠道、令牌、计费、日志、异步任务和运维配置纳入一个可配置、可观测、可核算的治理层。
+
+### 相比 New API 的主要不同与改进
+
+| 领域 | New API 已有基础 | MAX API v1.0.0 的改进 |
+| --- | --- | --- |
+| 项目定位 | 多模型 API 网关与 AI 资产管理 | 明确扩展为 AI 模型治理、AgentOps 与应用服务基础设施，强调模型、渠道、Agent 调用链路、成本和审计的持续运营 |
+| 渠道治理 | 支持多供应商渠道、模型映射、权重、分组和失败重试 | 增加渠道能力矩阵与配置校验，帮助管理员在保存前识别 Base URL、JSON 配置、模型发现、Codex 凭证、Vertex AI 区域、视频任务占位符等风险 |
+| 自定义上游 | 支持 Advanced Custom 渠道与协议转换 | 强化按请求路径选择渠道的逻辑，使高级自定义渠道与普通渠道在缓存和数据库选择路径下保持一致；无效高级自定义配置会被跳过并记录错误，避免影响同模型下的健康渠道 |
+| 多模态任务 | 已具备视频任务入口和部分供应商任务适配 | 新增通用视频任务协议，可配置提交路径、查询路径、任务 ID、状态、进度、结果 URL、错误字段和状态映射，减少为兼容型视频上游重复写适配器的成本 |
+| 任务结果代理 | 支持任务状态查询 | 强化 `/v1/videos/{task_id}/content` 内容代理场景，便于在需要隐藏上游资源地址时通过网关返回任务结果 |
+| 成本与计费 | 支持倍率、固定价格、表达式计费等基础 | 增加分阶段计费 JSON 统一维护入口，并新增 `task_billing_setting.rate_cards` 任务 rate-card 计费配置，适合按供应商、模型、时长、质量、音频、视频输入等参数核算异步任务成本 |
+| 运维与文档 | 提供部署、环境变量、FAQ 等通用说明 | README 和安装文档改为围绕治理配置、能力矩阵、视频任务协议、计费 JSON、Docker 镜像和多机部署注意事项展开，更适合生产部署前核对 |
+| 发布与镜像 | 使用 New API 镜像和仓库命名 | MAX API 使用独立镜像 `cscitechtop/max-api:v1.0.0` 与 `cscitechtop/max-api:latest`，服务名、部署示例、文档入口和支持入口已切换到 MAX API 体系 |
+
+### 重点更新
+
+#### 1. 模型治理与 AgentOps 定位
+
+MAX API v1.0.0 将网关能力从“统一转发”进一步扩展为治理平面：
+
+- 统一管理模型入口、供应商渠道、模型映射、分组、权限和价格规则。
+- 为应用、Agent、工作流和工具调用提供独立令牌、模型范围、额度和过期时间控制。
+- 通过请求日志、用量统计、渠道命中、错误信息和成本归因支持 Agent 调用链路排查。
+- 面向私有化和组织运营场景，强调密钥自主管理、日志留存、审计边界和合规配置。
+
+#### 2. 渠道能力矩阵与配置校验
+
+渠道新建和编辑流程新增更清晰的治理辅助能力：
+
+- 能力矩阵展示 `chat/completions`、`responses`、`Claude Messages`、`Gemini native`、`embeddings`、`images`、`audio`、`rerank`、`video tasks`、`model discovery` 等能力状态。
+- 保存前校验 API Key、模型列表、Base URL、额外配置 JSON、Vertex AI 区域、Codex 凭证、模型发现设置和视频任务路径占位符。
+- 对需要额外 JSON 配置的渠道，提前暴露配置风险，减少上线后才发现路径、协议或字段不匹配的问题。
+
+#### 3. 高级自定义渠道选择更稳健
+
+v1.0.0 强化了 Advanced Custom 渠道在多路径、多优先级、多权重场景下的选择行为：
+
+- 渠道选择会先按请求路径过滤高级自定义渠道，再进入优先级和权重选择。
+- 内存缓存路径和数据库路径使用一致的高级自定义配置解析与校验逻辑。
+- 配置损坏或校验失败的高级自定义渠道会被排除并记录错误，不会阻断同模型、同分组下的正常渠道。
+- 优先级重试会做边界处理，避免重试索引越界导致异常。
+
+#### 4. 通用视频任务协议
+
+MAX API 将视频任务接入从固定供应商适配扩展为可配置任务协议。渠道可通过 `task_protocol = "generic_video_task"` 与 `task_protocol_config` 描述上游任务接口：
+
+```json
+{
+  "task_protocol": "generic_video_task",
+  "task_protocol_config": {
+    "submit_path": "/v1/videos/create",
+    "query_path": "/v1/videos/{task_id}",
+    "task_id_path": "task_id",
+    "status_path": "status",
+    "progress_path": "progress",
+    "result_url_paths": [
+      "result.primary_url",
+      "result.urls.0",
+      "data.result.primary_url",
+      "url",
+      "video_url",
+      "download_url"
+    ],
+    "error_message_path": "error_message",
+    "status_map": {
+      "queued": "QUEUED",
+      "running": "IN_PROGRESS",
+      "succeeded": "SUCCESS",
+      "failed": "FAILURE"
+    }
+  }
+}
+```
+
+该能力适合路径、任务 ID、状态字段、进度字段、错误字段和结果 URL 字段可通过 JSON 路径描述的视频上游。查询路径支持 `{task_id}`、`{operation_name}` 和 `{upstream_task_id}`，其中 `{operation_name}` 可保留多段路径，适配 Gemini / Vertex 风格的 operation 查询。
+
+如果上游需要特殊签名、非标准认证、复杂请求体重写、回调机制或完全不同的任务生命周期，仍建议新增或扩展专用适配器，不应仅依赖配置项。
+
+#### 5. 任务 rate-card 与计费 JSON 维护
+
+MAX API v1.0.0 对计费配置做了更适合生产维护的整理：
+
+- `Tiered billing JSON` 用于统一维护多个模型的分阶段计费规则，保存时同步更新 `billing_mode` 与 `billing_expr`。
+- `task_billing_setting.rate_cards` 用于维护异步任务计费规则，可按 `vendor` 区分 Sora、Veo、Seedance、Kling 等供应商分区。
+- 任务 rate-card 支持按请求参数匹配价格，例如时长、清晰度、是否带音频、是否有视频输入等字段。
+- 用量日志中保留计费模式和命中明细，便于定位复杂模型或视频任务的成本来源。
+
+示例：
+
+```json
+{
+  "vendor/model-name": {
+    "vendor": "kling",
+    "unit": "second",
+    "quantity_field": "duration",
+    "default_quantity": 5,
+    "strict": true,
+    "defaults": {
+      "quality": "std",
+      "has_audio": "false"
+    },
+    "rows": [
+      {
+        "id": "std_no_audio",
+        "match": {
+          "quality": "std",
+          "has_audio": "false"
+        },
+        "unit_price": 0.6
+      }
+    ]
+  }
+}
+```
+
+#### 6. 部署与镜像
+
+v1.0.0 推荐直接使用 MAX API 镜像。固定生产版本可使用 `v1.0.0` tag，跟随最新构建可使用 `latest` tag：
+
+```bash
+docker pull cscitechtop/max-api:v1.0.0
+docker pull cscitechtop/max-api:latest
+
+docker run --name max-api -d --restart always \
+  -p 3000:3000 \
+  -e TZ=Asia/Shanghai \
+  -v ./data:/data \
+  cscitechtop/max-api:v1.0.0
+```
+
+生产环境建议使用 Docker Compose，并显式配置数据库、Redis、`SESSION_SECRET`、`CRYPTO_SECRET`、日志目录、HTTPS 反向代理和备份策略。
+
+### 兼容与迁移说明
+
+- MAX API 继续兼容 New API 与 One API 的主要数据结构，通常可以复用既有数据库数据。
+- 迁移前必须备份数据库，并在测试环境验证用户、令牌、渠道、倍率、模型映射、任务记录和日志数据。
+- 使用多机部署时，所有节点应配置相同的 `SESSION_SECRET`；启用 Redis 或多机共享加密数据时，应配置相同的 `CRYPTO_SECRET`。
+- 从 New API 镜像迁移时，请将部署镜像替换为 `cscitechtop/max-api:v1.0.0` 或 `cscitechtop/max-api:latest`，并核对容器名、服务名、Pyroscope 应用名、仓库地址和文档入口。
+- 对已有 Advanced Custom 渠道，建议迁移后重点检查 `advanced_custom` 配置是否能通过当前校验规则，以及每条路由的 `incoming_path` 是否覆盖真实请求路径。
+- 对视频任务渠道，建议先用测试模型验证提交、轮询、状态映射、结果 URL 提取和内容代理，再开放给生产令牌。
+
+### 仍需注意的边界
+
+- MAX API 是网关治理层，不提供上游模型账号、API Key、基础模型训练能力或模型服务本身。
+- MAX API 不替代 Dify、LangChain、MCP Server、工作流引擎或业务 Agent 应用；它负责这些应用和上游模型服务之间的接入、鉴权、路由、计费、日志和治理。
+- 通用视频任务协议适合结构可配置的 submit/query 类接口；对强签名、复杂认证、回调驱动或非任务式上游，仍需要适配器开发。
+- 面向公众提供生成式 AI 服务时，运营方仍需自行完成上游授权、备案、内容安全、实名、日志留存、支付、税务和用户协议等合规义务。
+
+### 致谢
+
+MAX API v1.0.0 延续并兼容 New API 与 One API 的开源基础，在此基础上面向模型治理、AgentOps、异步任务和成本核算场景做进一步工程化增强。感谢相关开源项目和社区生态的长期贡献。
+
+
+**Download Resources**
+
+<ul>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.0.zip">Source code (zip)</a></li>
+<li><a href="https://github.com/MAX-API-Next/MAX-API/archive/refs/tags/v1.0.0.tar.gz">Source code (tar.gz)</a></li>
+</ul>
+
+</Callout>
+
+---
+

@@ -1,0 +1,98 @@
+---
+title: Project Introduction
+description: Learn about MAX API, API gateway infrastructure for AI model governance, AgentOps, and legally authorized deployments.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="my-8 text-center">
+  <img
+    src="/assets/logo.png"
+    alt="MAX API Logo"
+    className="mx-auto"
+    width="120"
+    height="120"
+  />
+  <h1 className="mt-4 mb-2 text-4xl font-bold">MAX API</h1>
+  <p className="text-fd-muted-foreground">
+    Infrastructure for AI model governance, AgentOps, and AGI applications
+  </p>
+</div>
+
+## Overview
+
+MAX API is an open-source project initiated, maintained, and operated by AGI enthusiasts from research institutes and universities. It provides a unified AI model access, authentication, routing, billing, observability, and governance layer for developers, researchers, teams, and organizations.
+
+It is not only a request forwarder. MAX API is an operable gateway for AI-ready applications and agent workloads. It brings model providers, protocol formats, channel capabilities, token permissions, cost accounting, log auditing, rate limiting, caching, and multimodal tasks into one governance boundary so deployments can run AI applications with better stability and control.
+
+<Callout type="info">
+  MAX API does not provide upstream model accounts, API keys, base model
+  training, or model services. Deployers must obtain legally authorized upstream
+  services and handle the corresponding compliance obligations.
+</Callout>
+
+## Core Positioning
+
+- **Model governance plane**: Centrally manage model entries, channels, providers, protocol formats, model mappings, pricing rules, and multimodal interfaces.
+- **AgentOps control plane**: Provide independent tokens, model access control, request logs, cost attribution, failure diagnosis, and operational analysis for agents, workflows, and tool calls.
+- **Protocol and provider adaptation layer**: Support OpenAI Compatible, Responses, Claude Messages, Gemini, Realtime, embeddings, rerank, image, audio, and video task APIs.
+- **Channel configuration governance**: Show capability matrices, configuration validation, model discovery, path overrides, and task protocol templates when creating or editing channels.
+- **Cost and reliability governance**: Support expression billing, staged billing JSON, task rate cards, ratio billing, pre-charge, failure refunds, weighted random channel selection, retry, and model rate limits.
+- **Performance and scalability governance**: Support Redis or memory cache, streaming timeouts, request body limits, upstream connection pool tuning, disk cache, Pyroscope profiling, and graceful shutdown.
+
+## Use Cases
+
+- Internal AI model governance platforms
+- Agent application runtime and governance infrastructure
+- Multi-provider and domestic model adaptation hubs
+- Multimodal task governance for text, image, video, audio, embeddings, rerank, and realtime conversations
+- Model and agent cost accounting platforms
+- Private deployment and compliance-oriented operating environments
+
+## License and Authorization Boundary
+
+MAX API adopts the **GNU AGPLv3** open-source license.
+
+This project is based on [One API](https://github.com/songquanpeng/one-api) and [New API](https://github.com/QuantumNous/new-api). For commercial use or derivative development, you must comply with MAX API's authorization terms and also comply with One API's MIT license and New API's AGPLv3 license. Temporary commercial authorization provided by MAX API does not replace or waive upstream open-source license obligations.
+
+<Callout type="warn">
+  If you modify this project and provide it as a network service, understand and
+  comply with the corresponding AGPLv3 source-code obligations. For long-term
+  commercial authorization or institutional cooperation, contact
+  maxapi@max-api.ai.
+</Callout>
+
+## Derivative Development and Community Attribution
+
+If you build a self-use derivative project based on MAX API, you may keep attribution in a visible place such as your project homepage, footer, or About page by using either of the following:
+
+- Add the project URL: [MAX-API-Next/MAX-API](https://github.com/MAX-API-Next/MAX-API)
+- Acknowledge the community: [MAX-API-Next](https://github.com/MAX-API-Next)
+
+When either attribution requirement is met and the link remains clearly visible, the non-permanent temporary commercial authorization described in the project README takes effect automatically, without a separate application or confirmation. This authorization only covers additions and modifications that the MAX API project maintainers have the right to authorize.
+
+## Disclaimer
+
+<Callout type="error">Before using MAX API, please read and understand these important statements.</Callout>
+
+**1. Legal Authorization and Compliant Use**
+
+Users must legally obtain upstream API Keys, model services, and other third-party service authorizations, and comply with upstream service terms and platform rules. When using this project, ensure that relevant scenarios comply with laws and regulations, regulatory requirements, and content security requirements. For details, see the [Compliance and Acceptable Use Policy](/en/docs/legal/acceptable-use).
+
+**2. AI Provider Service Terms**
+
+Users must comply with all applicable AI provider service terms, including the [OpenAI Terms of Use](https://openai.com/policies/terms-of-use), Anthropic policies, and other relevant provider agreements.
+
+**3. AI Regulatory Compliance**
+
+Users must comply with relevant AI regulations, including the [Interim Measures for the Management of Generative Artificial Intelligence Services](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm) and other applicable AI governance frameworks.
+
+**4. Public Service Obligations**
+
+If users provide generative AI services to the general public, they shall independently fulfill compliance obligations required by local laws and regulations, such as filing, content security, identity management, log retention, taxation, payment, consumer protection, and upstream authorization.
+
+**5. Maintainer Position**
+
+<Callout type="warn">
+  MAX API is provided "as is," without warranties of any kind. The developers and maintainers are not liable for any damages or legal issues arising from the use of this software.
+</Callout>

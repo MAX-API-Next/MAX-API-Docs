@@ -1,0 +1,50 @@
+---
+title: Features Description
+description: Overview of MAX API model governance, AgentOps, billing, reliability, and operations capabilities.
+---
+
+## AI Model Governance
+
+1. Provides a unified model entry point with support for OpenAI Compatible, Responses, Claude Messages, Gemini, Realtime, and other protocols.
+2. Supports multi-provider model pools, including OpenAI, Azure OpenAI, Claude, Gemini, AWS Bedrock, Vertex AI, Ollama, DeepSeek, Tongyi Qianwen, Zhipu GLM, Kimi, Doubao, Tencent Hunyuan, Wenxin, iFLYTEK Spark, MiniMax, 01.AI, SiliconFlow, and other channels.
+3. Supports model lists, model mapping, user groups, token groups, model restrictions, and pricing rule management.
+4. Shows channel capability matrices for `chat/completions`, `responses`, `embeddings`, `rerank`, `video tasks`, model discovery, and related capabilities.
+5. Provides channel configuration validation for common risks such as API keys, model lists, base URLs, JSON configuration, Vertex AI regions, Codex credentials, and video task placeholders.
+
+## AgentOps and Organization Governance
+
+1. Create independent API keys for agents, workflows, plugins, tool calls, or users.
+2. Control token model scopes, quota limits, expiration times, and group access.
+3. Record request logs with model, channel, group, user, token, consumption, latency, errors, and retry information for agent failure diagnosis and cost anomaly analysis.
+4. Administrators can enable log auditing for compliance; normal user log APIs filter administrator-only audit fields.
+5. Provides organization operations entries such as user management, group management, redemption codes, payments, subscriptions, dashboards, and system settings.
+
+## Billing and Cost Accounting
+
+1. Supports traditional model ratios, group ratios, channel ratios, per-call billing, and cache-hit billing.
+2. Supports expression billing for tiered prices, cache pricing, image or audio tokens, time-based discounts, and parameter markups.
+3. Supports `Tiered billing JSON` to maintain staged billing rules for multiple models in bulk.
+4. Supports parameterized rate cards for asynchronous tasks such as video, matching prices by provider, model, duration, resolution, audio inclusion, video input, and other fields.
+5. Supports pre-charge, failure refunds, consumption logs, and usage statistics for long-running agent chains and asynchronous multimodal tasks.
+
+## Multimodal and Task Protocols
+
+1. Supports chat, completions, image, video, audio, embeddings, rerank, realtime conversations, and related scenarios.
+2. Configurable generic video task protocol for submit path, query path, task ID, status, progress, result URL, error message, and status mapping.
+3. Request body pass-through and rewriting reuse the channel settings `Pass Through Body` and `Param Override`.
+4. Video content can be proxied through `/v1/videos/{task_id}/content` to hide upstream resource domains.
+
+## Performance, Reliability, and Deployment
+
+1. Supports SQLite, MySQL, and PostgreSQL. SQLite is suitable for local trials; MySQL or PostgreSQL is recommended for production.
+2. Supports Redis or memory cache for single-node and multi-node deployments.
+3. Supports global API and web rate limits, critical endpoint rate limits, search rate limits, model request rate limits, and group-level model request quotas.
+4. Supports `STREAMING_TIMEOUT`, `STREAM_SCANNER_MAX_BUFFER_MB`, `MAX_REQUEST_BODY_MB`, and `MAX_FILE_DOWNLOAD_MB` for long streaming responses, large request bodies, and remote file downloads.
+5. Supports upstream HTTP connection pool and timeout tuning, disk cache, Pyroscope profiling, graceful shutdown, and quota cache persistence.
+
+## Login, Security, and Compliance
+
+1. Supports JWT, WebAuthn/Passkeys, OAuth, OIDC, Telegram, Discord, LinuxDO, and related login methods.
+2. Supports administrators, normal users, groups, tokens, and model access control.
+3. Supports request body size limits, streaming timeout control, error logs, runtime health checks, and consistent session secrets for multi-node deployments.
+4. Deployers who provide generative AI services to the public should independently handle filing, content safety, real-name identity requirements, log retention, taxation, payment, consumer protection, and upstream authorization obligations.
