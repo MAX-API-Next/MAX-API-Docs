@@ -1,6 +1,6 @@
 # MAX API Docs
 
-[English](./README.md) | **简体中文**
+[English](./README.en.md) | **简体中文**
 
 MAX API 的 Next.js 文档站点。
 
