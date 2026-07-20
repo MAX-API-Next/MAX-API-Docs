@@ -1,10 +1,53 @@
-
-
 # MAX API Docs
 
 [English](./README.md) | **简体中文**
 
 MAX API 的 Next.js 文档站点。
+
+## 安装 Bun
+
+本项目使用 Bun 安装依赖和执行开发、构建脚本。项目的 Docker 构建当前使用 Bun 1.3.14，本地开发建议使用 Bun 1.3.14 或更新的兼容版本。
+
+### Linux 和 macOS
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+安装完成后，重新打开终端，或者根据当前 Shell 重新加载配置：
+
+```bash
+# Bash
+source ~/.bashrc
+
+# Zsh
+source ~/.zshrc
+```
+
+### Windows PowerShell
+
+```powershell
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+安装完成后重新打开 PowerShell。使用 WSL 时，请在 WSL 终端中执行前面的 Linux 安装命令。
+
+### macOS Homebrew
+
+也可以通过 Homebrew 安装：
+
+```bash
+brew tap oven-sh/bun
+brew install bun
+```
+
+安装后检查 Bun 是否可用：
+
+```bash
+bun --version
+```
+
+如果使用 Docker Compose 部署，则宿主机不需要单独安装 Bun，`Dockerfile` 会在镜像构建阶段提供所需的 Bun 环境。
 
 ## 本地开发
 
@@ -79,7 +122,46 @@ docker compose --env-file .env.docker up -d --build
 
 修改 `NEXT_PUBLIC_SITE_URL` 或 `NEXT_PUBLIC_GA_ID` 后必须重新构建镜像，因为 Next.js 会在构建阶段嵌入公开环境变量。修改 `INKEEP_API_KEY`、`AI_MODEL` 或 `AI_BASE_URL` 后只需重新创建容器。
 
-### 3. 直接使用已发布镜像
+### 3. Linux 构建报错排查
+
+如果执行以下命令：
+
+```bash
+docker compose --env-file .env.docker build
+```
+
+在 `RUN bun run build` 阶段出现以下错误：
+
+```text
+$ tsx scripts/prebuild.ts
+error: Cannot find module './cjs/index.cjs' from ''
+error: script "prebuild" exited with code 1
+```
+
+这是 Bun 1.3.14 在 Linux 中执行 `tsx` CLI 时触发的模块解析兼容问题。项目已改为由 Bun 直接执行 TypeScript 预构建脚本。更新代码后，先确认 `package.json` 中的脚本为：
+
+```json
+"prebuild": "bun scripts/prebuild.ts"
+```
+
+然后清除旧的镜像构建缓存并重新构建：
+
+```bash
+git pull
+docker compose --env-file .env.docker build --no-cache
+```
+
+构建成功后启动容器并检查状态：
+
+```bash
+docker compose --env-file .env.docker up -d
+docker compose --env-file .env.docker ps
+docker compose --env-file .env.docker logs --tail=100 max-api-docs
+```
+
+`ps` 输出中的服务状态应为 `running` 或 `healthy`。如果仍然看到 `$ tsx scripts/prebuild.ts`，说明服务器使用的还是旧代码，请重新确认当前分支、最新提交以及 `package.json` 的实际内容。
+
+### 4. 直接使用已发布镜像
 
 镜像发布到仓库后，可将 `docker-compose.yml` 中的 `image: max-api-docs:local` 替换为实际镜像地址，并删除 `build` 配置。容器内部始终监听 `33301` 端口。
 
