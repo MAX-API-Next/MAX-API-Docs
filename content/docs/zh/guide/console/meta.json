@@ -9,6 +9,7 @@
     "usage-log",
     "drawing-log",
     "task-log",
+    "system-info",
     "user-management",
     "redeem-code-management",
     "wallet",

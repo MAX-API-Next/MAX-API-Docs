@@ -92,14 +92,11 @@ cd max-api
 # 拉取最新代码
 git pull
 
-# 编译后端
-go build -o max-api
-
-# Update and build frontend (choose new or classic as needed, default is new)
+# Build the frontend first (choose default or classic as needed; default shown)
 # New Frontend (default)
 cd web/default
 bun install
-bun run build
+bun run build:check
 cd ../..
 
 # Classic Frontend (classic)
@@ -108,7 +105,10 @@ cd ../..
 # bun run build
 # cd ../..
 
-# 重启服务
+# Build the backend last so go:embed includes the new web/default/dist
+go build -o max-api
+
+# Restart the service
 ./max-api --port 3000
 ```
 
@@ -169,14 +169,11 @@ cd max-api
 # 切换到特定版本
 git checkout v1.x.x
 
-# 重新编译
-go build -o max-api
-
-# Update and build frontend (choose new or classic as needed, default is new)
+# Build the frontend first (choose default or classic as needed; default shown)
 # New Frontend (default)
 cd web/default
 bun install
-bun run build
+bun run build:check
 cd ../..
 
 # Classic Frontend (classic)
@@ -185,7 +182,10 @@ cd ../..
 # bun run build
 # cd ../..
 
-# 重启服务
+# Build the backend last so go:embed includes the new web/default/dist
+go build -o max-api
+
+# Restart the service
 ./max-api --port 3000
 ```
 

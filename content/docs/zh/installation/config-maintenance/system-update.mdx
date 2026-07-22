@@ -90,14 +90,11 @@ cd MAX-API
 # 拉取最新代码
 git pull
 
-# 编译后端
-go build -o max-api
-
-# 更新并编译前端（根据需要选择新版或旧版，这里以新版为例）
+# 先更新并构建前端（根据需要选择新版或旧版，这里以新版为例）
 # 新版前端 (default)
 cd web/default
 bun install
-bun run build
+bun run build:check
 cd ../..
 
 # 旧版前端 (classic)
@@ -105,6 +102,9 @@ cd ../..
 # bun install
 # bun run build
 # cd ../..
+
+# 最后编译后端，使 go:embed 嵌入刚生成的 web/default/dist
+go build -o max-api
 
 # 重启服务
 ./max-api --port 3000
@@ -165,14 +165,11 @@ cd MAX-API
 # 切换到特定版本
 git checkout v1.x.x
 
-# 重新编译
-go build -o max-api
-
-# 更新并编译前端（根据需要选择新版或旧版，这里以新版为例）
+# 先更新并构建前端（根据需要选择新版或旧版，这里以新版为例）
 # 新版前端 (default)
 cd web/default
 bun install
-bun run build
+bun run build:check
 cd ../..
 
 # 旧版前端 (classic)
@@ -180,6 +177,9 @@ cd ../..
 # bun install
 # bun run build
 # cd ../..
+
+# 最后重新编译后端，使 go:embed 嵌入刚生成的 web/default/dist
+go build -o max-api
 
 # 重启服务
 ./max-api --port 3000

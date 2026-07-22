@@ -20,6 +20,16 @@ Here you can manage MAX API's upstream channels.
 
 ![渠道管理3](/assets/guide/create-channel-3.png)
 
+## Video Task Billing (DoubaoVideo)
+
+This setting is available only for **DoubaoVideo** channels. Edit the channel, expand advanced settings, and open **Video Task Billing** to control **Completion delta settlement**.
+
+- It is enabled by default. A snapshot is saved when a task is submitted. When the task completes, the system can use upstream `usage.total_tokens` to make a delta charge or refund against the reserved quota.
+- Disable it when upstream usage is unreliable, channel pricing has not been calibrated, or submitted tasks must not be adjusted again after completion. When disabled, the task keeps its submission-time reserved or fixed billing result and no automatic completion-time charge or refund is applied.
+- The switch affects DoubaoVideo only; other video channels ignore `disable_task_delta_settlement`. It is stored in the channel `settings` JSON and requires no database migration.
+
+The setting is captured for newly submitted tasks. Older unfinished tasks without a snapshot fall back to the current channel setting. Maintain `ModelRatio` and task-billing configuration against actual upstream cost regardless of this switch.
+
 # Parameter Override Settings Documentation
 
 ## Overview

@@ -1,0 +1,27 @@
+---
+title: System Information and Instances
+---
+
+The System Information page is for Root administrators. It provides instance status, resource usage, and system-task information for multi-node deployments. Open **System Information** from the profile menu.
+
+## Instance Status
+
+The instance list shows the node name, role, version, start time, last heartbeat, and resource status. Instances report their status every 30 seconds by default. A record whose last heartbeat is more than 90 seconds old is marked as stale.
+
+Configure a stable, unique `NODE_NAME` for each node so the same instance remains identifiable during rolling updates and asynchronous-task troubleshooting.
+
+## Remove Stale Instances
+
+Only Root administrators can remove instance records.
+
+1. In **System Information -> Instances**, confirm the stale records to remove.
+2. When removing one record, the backend rejects instances that are online or still within the stale threshold.
+3. Use **Delete all stale** to remove every stale record in one action. The list refreshes after confirmation.
+
+Bulk removal only affects records whose `last_seen_at` is **earlier than** the current time minus the stale threshold. Online instances and records exactly on the threshold are not removed. Refresh and single-instance removal are temporarily disabled while the operation is running to prevent duplicate actions.
+
+## Management API
+
+The Root-only endpoint is `DELETE /api/system-info/stale-instances`. On success, `data.deleted_count` reports the number of records actually removed. The operation reuses the existing `system_instances` data and requires no database migration.
+
+> Removing an instance record does not stop a process, revoke keys, or change channel configuration. Investigate networking, clock synchronization, and heartbeat reporting before removing a record for a node that might still be running.
