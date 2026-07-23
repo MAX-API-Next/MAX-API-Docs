@@ -40,6 +40,16 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | 参数覆盖 | 强制覆盖请求中的某些参数,JSON 格式 |
 | 自动禁用 | 开启后连续失败达到阈值时自动禁用该渠道 |
 
+### 视频任务计费（DoubaoVideo）
+
+此设置仅适用于 **DoubaoVideo** 渠道。编辑 DoubaoVideo 渠道后，展开高级设置并进入 **Video Task Billing**，可以控制 **Completion delta settlement（完成态差额结算）**。
+
+- 默认开启。任务提交时会保存该开关的快照；任务完成后，系统可依据上游返回的 `usage.total_tokens` 对预扣额度进行差额补扣或退款。
+- 当上游 usage 返回不稳定、渠道费率尚未校准，或不希望已提交任务在完成后再次调整额度时，可以关闭该开关。关闭后，任务保留提交时的预扣或固定计费结果，不再根据完成回调自动补扣或退款。
+- 该开关只影响 DoubaoVideo；其他视频渠道会忽略 `disable_task_delta_settlement`。设置保存在渠道 `settings` JSON 中，不需要数据库迁移。
+
+开关状态会随新提交的任务保存。升级前已提交且没有开关快照的未完成旧任务，会回退读取当前渠道设置。无论开关状态如何，仍应根据实际上游成本校准 `ModelRatio` 和任务计费配置。
+
 ### 提交保存
 
 点击「提交」完成渠道添加,新渠道出现在列表中

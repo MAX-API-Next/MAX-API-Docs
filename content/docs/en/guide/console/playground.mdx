@@ -2,27 +2,6 @@
 title: Playground
 ---
 
-Use the Playground to chat with AI and to test models, channels, and request parameters.
+Here you can quickly engage in AI chat, facilitating testing and use.
 
 ![Playground](/assets/guide/feature-guide/playground.png)
-
-## Select a Model and Group
-
-Choose a model and an available group above the prompt. When you choose an `auto` or `auto:*` group, the Playground loads the model collection available to the current user. Actual availability still depends on the channels, groups, and permissions configured by an administrator.
-
-## Model Parameters
-
-Select the parameter button in the prompt toolbar to open parameter settings. It opens in a popover on desktop and a bottom sheet on mobile. Each parameter must be enabled individually. **Only enabled parameters are sent with the chat-completion request.** Settings are stored in the current browser so they can be reused for later tests.
-
-| Parameter | Range | Purpose |
-| --- | --- | --- |
-| Temperature | `0` - `2`, step `0.1` | Controls randomness and creativity. Lower values are usually more stable; higher values are usually more varied. |
-| Top P | `0` - `1`, step `0.05` | Limits candidate tokens to a cumulative probability mass. |
-| Frequency Penalty | `-2` - `2`, step `0.1` | Reduces repeated wording. |
-| Presence Penalty | `-2` - `2`, step `0.1` | Encourages the model to introduce new topics. |
-| Max Tokens | `1` - `200000`, integer | Caps response length. |
-| Seed | `0` - `2147483647`, integer, optional | Makes equivalent requests more repeatable on supported models. Leave it blank to omit `seed`. |
-
-Values are normalized to the control range and step. Clearing a required numeric value restores that parameter's minimum; Seed can be cleared to an unset state.
-
-> Model and upstream support varies by parameter. An upstream service can still reject an enabled field that it does not support. Disable the field or select a compatible model when that happens.

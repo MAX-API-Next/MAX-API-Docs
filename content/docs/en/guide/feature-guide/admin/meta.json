@@ -12,6 +12,7 @@
     "system-setting",
     "custom-oauth",
     "performance",
+    "system-info",
     "docs-config"
   ]
 }

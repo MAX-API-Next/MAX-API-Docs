@@ -27,6 +27,16 @@ The channel list shows all configured AI provider channels with their name, type
 | Parameter Override | Force-override certain request parameters (JSON) |
 | Auto Disable | When enabled, automatically disables the channel after consecutive failures |
 
+### Video Task Billing (DoubaoVideo)
+
+This setting is available only for **DoubaoVideo** channels. Edit a DoubaoVideo channel, expand advanced settings, and open **Video Task Billing** to control **Completion delta settlement**.
+
+- It is enabled by default. The switch state is captured when a task is submitted. When the task completes, the system can use upstream `usage.total_tokens` to apply a delta charge or refund against the reserved quota.
+- Disable it when upstream usage is unreliable, channel pricing has not been calibrated, or submitted tasks must not be adjusted again after completion. When disabled, the task keeps its submission-time reserved or fixed billing result and no automatic completion-time charge or refund is applied.
+- The switch affects DoubaoVideo only; other video channels ignore `disable_task_delta_settlement`. It is stored in the channel `settings` JSON and requires no database migration.
+
+New tasks retain the submission-time setting. Older unfinished tasks without a snapshot fall back to the channel's current setting. Maintain `ModelRatio` and task-billing configuration against actual upstream cost regardless of this switch.
+
 6. Click "Submit" — the new channel appears in the list
 
 ## Test a Channel
